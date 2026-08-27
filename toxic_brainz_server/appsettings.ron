@@ -4,11 +4,10 @@ AppConfig(
     host:"127.0.0.1"
   ),
   auth: AuthConfig(
-    enforce_email_domain: "emaengineer.com",
-    jwt_secret:"change-me",
+    jwt_secret:"1234",
     access_token_ttl:"15m",
     refresh_token_ttl:"15d",
-    require_email_verification: true,
+    require_email_verification: false,
   ),
   db: DbConfig(
     url:"",
