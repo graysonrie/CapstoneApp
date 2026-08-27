@@ -17,9 +17,15 @@ struct ContentView: View {
             }
             
             NavigationStack {
+                PlantCameraView()
+            }.tabItem {
+                Label("Camera", systemImage: "camera.fill")
+            }
+
+            NavigationStack {
                 LoginView()
             }.tabItem {
-                Label("Login", systemImage: "person.crop.circle.fill")
+                Label("Profile", systemImage: "person.crop.circle.fill")
             }
         }
     }
