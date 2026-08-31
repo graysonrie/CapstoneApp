@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Camera, Home, LogIn, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMobileNavBarStore } from "./useMobileNavBarStore";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home", icon: Home },
@@ -14,6 +15,12 @@ const NAV_ITEMS = [
 
 export default function MobileNavBar() {
   const pathname = usePathname();
+
+  const { shouldShow } = useMobileNavBarStore();
+
+  if (!shouldShow) {
+    return null;
+  }
 
   return (
     <nav

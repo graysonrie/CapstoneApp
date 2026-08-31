@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [tab, setTab] = useState("login");
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 p-8 justify-center">
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-8 justify-center">
       <LoginForm />
     </main>
   );

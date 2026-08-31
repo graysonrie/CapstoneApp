@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Lock, Mail, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -8,12 +8,16 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { useLoginMutation } from "@/features/auth/hooks/useAuthMutations";
+import { useAuthFormStore } from "../store/useAuthFormStore";
 
 export default function LoginForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { name, password, email, setValues } = useAuthFormStore();
   const loginMutation = useLoginMutation();
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -22,56 +26,93 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-      <FieldGroup className="gap-5">
-        <Field>
-          <FieldLabel htmlFor="login-email" className="text-md">
-            Email
-          </FieldLabel>
-          <Input
-            id="login-email"
-            type="email"
-            autoComplete="email"
-            placeholder="your_email@example.com"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-            className="h-15 text-lg"
-          />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="login-password" className="text-md">
-            Password
-          </FieldLabel>
-          <Input
-            id="login-password"
-            type="password"
-            autoComplete="current-password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-            className="h-15 text-lg"
-          />
-        </Field>
-      </FieldGroup>
+    <div className="">
+      <div className="flex w-full justify-center py-8">
+        <p className="font-bold text-xl">Log In</p>
+      </div>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <FieldGroup className="gap-5">
+          <Field>
+            <FieldLabel htmlFor="login-name" className="text-md">
+              Name
+            </FieldLabel>
+            <InputGroup className="h-15">
+              <InputGroupAddon>
+                <User aria-hidden className="size-5" />
+              </InputGroupAddon>
+              <InputGroupInput
+                id="login-name"
+                type="name"
+                autoComplete="name"
+                placeholder="Richter Belmont"
+                value={name}
+                onChange={(event) => setValues({ name: event.target.value })}
+                required
+                className="text-lg"
+              />
+            </InputGroup>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="login-email" className="text-md">
+              Email
+            </FieldLabel>
+            <InputGroup className="h-15">
+              <InputGroupAddon>
+                <Mail aria-hidden className="size-5" />
+              </InputGroupAddon>
+              <InputGroupInput
+                id="login-email"
+                type="email"
+                autoComplete="email"
+                placeholder="your_email@example.com"
+                value={email}
+                onChange={(event) => setValues({ email: event.target.value })}
+                required
+                className="text-lg"
+              />
+            </InputGroup>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="login-password" className="text-md">
+              Password
+            </FieldLabel>
+            <InputGroup className="h-15">
+              <InputGroupAddon>
+                <Lock aria-hidden className="size-5" />
+              </InputGroupAddon>
+              <InputGroupInput
+                id="login-password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Minimum 8 characters"
+                value={password}
+                onChange={(event) =>
+                  setValues({ password: event.target.value })
+                }
+                required
+                className="text-lg"
+              />
+            </InputGroup>
+          </Field>
+        </FieldGroup>
 
-      {loginMutation.isError ? (
-        <FieldError>
-          {loginMutation.error instanceof Error
-            ? loginMutation.error.message
-            : "Something went wrong"}
-        </FieldError>
-      ) : null}
+        {loginMutation.isError ? (
+          <FieldError>
+            {loginMutation.error instanceof Error
+              ? loginMutation.error.message
+              : "Something went wrong"}
+          </FieldError>
+        ) : null}
 
-      <Button
-        type="submit"
-        size="lg"
-        className="w-full "
-        disabled={loginMutation.isPending}
-      >
-        {loginMutation.isPending ? "Signing in…" : "Sign in"}
-      </Button>
-    </form>
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full "
+          disabled={loginMutation.isPending}
+        >
+          {loginMutation.isPending ? "Signing in…" : "Sign in"}
+        </Button>
+      </form>
+    </div>
   );
 }

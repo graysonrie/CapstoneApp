@@ -1,15 +1,17 @@
-import { Playfair_Display, Noto_Sans, Inter, Manrope } from "next/font/google";
+import { Inter, Manrope } from "next/font/google";
 import type { Viewport } from "next";
 import "./globals.css";
-import AdaptiveWindowChrome from "@/components/window-chrome/AdaptiveWindowChrome";
-import MobileNavBar from "@/components/MobileNavBar";
+import MobileNavBar from "@/components/mobile-nav-bar";
 import { QueryProvider } from "@/components/QueryProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { cn } from "@/lib/utils";
 
-const manropeHeading = Manrope({subsets:['latin'],variable:'--font-heading'});
+const manropeHeading = Manrope({
+  subsets: ["latin"],
+  variable: "--font-heading",
+});
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 /** Disable pinch / double-tap zoom so the WebView feels like a native app.
  *  viewportFit cover draws under the iOS status bar / home indicator. */
@@ -29,11 +31,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn(
-        "font-sans",
-        inter.variable,
-        manropeHeading.variable,
-      )}
+      className={cn("font-sans", inter.variable, manropeHeading.variable)}
       suppressHydrationWarning
     >
       <body className="antialiased bg-transparent">
