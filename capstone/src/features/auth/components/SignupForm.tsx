@@ -1,15 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { Lock, Mail, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import { MIN_PASSWORD_LENGTH } from "@/features/auth/api/auth";
 import { useSignupMutation } from "@/features/auth/hooks/useAuthMutations";
+import { useAuthFormStore } from "../store/useAuthFormStore";
 
 export default function SignupForm() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { name, email, password, setValues } = useAuthFormStore();
   const signupMutation = useSignupMutation();
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -21,40 +30,65 @@ export default function SignupForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       <FieldGroup className="gap-5">
         <Field>
-          <FieldLabel htmlFor="signup-name">Name</FieldLabel>
-          <Input
-            id="signup-name"
-            type="text"
-            autoComplete="name"
-            placeholder="Your name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            required
-          />
+          <FieldLabel htmlFor="signup-name" className="text-md px-4">
+            Name
+          </FieldLabel>
+          <InputGroup className="h-15">
+            <InputGroupAddon>
+              <User aria-hidden className="size-5" />
+            </InputGroupAddon>
+            <InputGroupInput
+              id="signup-name"
+              type="text"
+              autoComplete="name"
+              placeholder="Richter Belmont"
+              value={name}
+              onChange={(event) => setValues({ name: event.target.value })}
+              required
+              className="text-lg"
+            />
+          </InputGroup>
         </Field>
         <Field>
-          <FieldLabel htmlFor="signup-email">Email</FieldLabel>
-          <Input
-            id="signup-email"
-            type="email"
-            autoComplete="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-          />
+          <FieldLabel htmlFor="signup-email" className="text-md px-4">
+            Email
+          </FieldLabel>
+          <InputGroup className="h-15">
+            <InputGroupAddon>
+              <Mail aria-hidden className="size-5" />
+            </InputGroupAddon>
+            <InputGroupInput
+              id="signup-email"
+              type="email"
+              autoComplete="email"
+              placeholder="your_email@example.com"
+              value={email}
+              onChange={(event) => setValues({ email: event.target.value })}
+              required
+              className="text-lg"
+            />
+          </InputGroup>
         </Field>
         <Field>
-          <FieldLabel htmlFor="signup-password">Password</FieldLabel>
-          <Input
-            id="signup-password"
-            type="password"
-            autoComplete="new-password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-          />
+          <FieldLabel htmlFor="signup-password" className="text-md px-4">
+            Password
+          </FieldLabel>
+          <InputGroup className="h-15">
+            <InputGroupAddon>
+              <Lock aria-hidden className="size-5" />
+            </InputGroupAddon>
+            <InputGroupInput
+              id="signup-password"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Minimum 8 characters"
+              value={password}
+              onChange={(event) => setValues({ password: event.target.value })}
+              required
+              minLength={MIN_PASSWORD_LENGTH}
+              className="text-lg"
+            />
+          </InputGroup>
         </Field>
       </FieldGroup>
 
@@ -70,9 +104,9 @@ export default function SignupForm() {
         type="submit"
         size="lg"
         className="w-full"
-        disabled={signupMutation.isLoading}
+        disabled={signupMutation.isPending}
       >
-        {signupMutation.isLoading ? "Creating account…" : "Create account"}
+        {signupMutation.isPending ? "Creating account…" : "Create account"}
       </Button>
     </form>
   );

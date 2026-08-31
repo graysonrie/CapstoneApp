@@ -1,9 +1,9 @@
 import { Inter, Manrope } from "next/font/google";
 import type { Viewport } from "next";
 import "./globals.css";
-import MobileNavBar from "@/components/mobile-nav-bar";
 import { QueryProvider } from "@/components/QueryProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { AuthShell } from "@/features/auth/components/AuthShell";
 import { cn } from "@/lib/utils";
 
 const manropeHeading = Manrope({
@@ -38,10 +38,7 @@ export default function RootLayout({
         <ThemeProvider>
           <QueryProvider>
             {/* <AdaptiveWindowChrome /> */}
-            <div className="flex min-h-dvh flex-col pt-[env(safe-area-inset-top)] pb-[calc(5rem+env(safe-area-inset-bottom))]">
-              {children}
-            </div>
-            <MobileNavBar />
+            <AuthShell>{children}</AuthShell>
           </QueryProvider>
         </ThemeProvider>
       </body>

@@ -2,7 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { login, signup } from "@/features/auth/api/mockAuth";
+import { login, signup } from "@/features/auth/api/auth";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import type { LoginInput, SignupInput, User } from "@/features/auth/types";
 
@@ -12,7 +12,7 @@ function useAuthSuccess() {
 
   return (user: User) => {
     setUser(user);
-    router.push("/");
+    router.push("/home");
   };
 }
 

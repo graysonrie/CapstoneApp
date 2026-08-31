@@ -5,4 +5,4 @@
 
 ### backend
 
-- the backend inside 'capstone'
+- I'm thinking Supabase since it'll be less work and we'll use the edge functions for custom stuff

@@ -34,8 +34,6 @@ chrono = "0.4.44"
 futures = "0.3.32"
 tauri-plugin-fs = "2.5"
 anyhow = "1.0.102"
-tb_client = { path = "../backend/crates/tb_client" }
-server_types = { path = "../backend/crates/server_types" }
 
 [target.'cfg(target_os = "ios")'.dependencies]
 tauri-plugin-ios-webview-insets = "0.1.0"
