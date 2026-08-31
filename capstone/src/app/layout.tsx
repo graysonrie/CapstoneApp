@@ -1,4 +1,4 @@
-import { Playfair_Display, Noto_Sans } from "next/font/google";
+import { Playfair_Display, Noto_Sans, Inter, Manrope } from "next/font/google";
 import type { Viewport } from "next";
 import "./globals.css";
 import AdaptiveWindowChrome from "@/components/window-chrome/AdaptiveWindowChrome";
@@ -7,15 +7,9 @@ import { QueryProvider } from "@/components/QueryProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { cn } from "@/lib/utils";
 
-const playfairDisplayHeading = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-heading",
-});
+const manropeHeading = Manrope({subsets:['latin'],variable:'--font-heading'});
 
-const notoSans = Noto_Sans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-});
+const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 /** Disable pinch / double-tap zoom so the WebView feels like a native app.
  *  viewportFit cover draws under the iOS status bar / home indicator. */
@@ -37,8 +31,8 @@ export default function RootLayout({
       lang="en"
       className={cn(
         "font-sans",
-        notoSans.variable,
-        playfairDisplayHeading.variable,
+        inter.variable,
+        manropeHeading.variable,
       )}
       suppressHydrationWarning
     >
@@ -46,7 +40,7 @@ export default function RootLayout({
         <ThemeProvider>
           <QueryProvider>
             {/* <AdaptiveWindowChrome /> */}
-            <div className="min-h-dvh pt-[env(safe-area-inset-top)] pb-[calc(5rem+env(safe-area-inset-bottom))]">
+            <div className="flex min-h-dvh flex-col pt-[env(safe-area-inset-top)] pb-[calc(5rem+env(safe-area-inset-bottom))]">
               {children}
             </div>
             <MobileNavBar />

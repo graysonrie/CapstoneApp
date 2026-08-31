@@ -25,19 +25,24 @@ export default function LoginForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       <FieldGroup className="gap-5">
         <Field>
-          <FieldLabel htmlFor="login-email">Email</FieldLabel>
+          <FieldLabel htmlFor="login-email" className="text-md">
+            Email
+          </FieldLabel>
           <Input
             id="login-email"
             type="email"
             autoComplete="email"
-            placeholder="prof_morris@example.com"
+            placeholder="your_email@example.com"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
+            className="h-15 text-lg"
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="login-password">Password</FieldLabel>
+          <FieldLabel htmlFor="login-password" className="text-md">
+            Password
+          </FieldLabel>
           <Input
             id="login-password"
             type="password"
@@ -46,6 +51,7 @@ export default function LoginForm() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             required
+            className="h-15 text-lg"
           />
         </Field>
       </FieldGroup>
@@ -61,7 +67,7 @@ export default function LoginForm() {
       <Button
         type="submit"
         size="lg"
-        className="w-full"
+        className="w-full "
         disabled={loginMutation.isPending}
       >
         {loginMutation.isPending ? "Signing in…" : "Sign in"}

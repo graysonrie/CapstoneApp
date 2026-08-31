@@ -5,4 +5,4 @@
 
 ### backend
 
-- toxic_brainz_server
+- the backend inside 'capstone'
