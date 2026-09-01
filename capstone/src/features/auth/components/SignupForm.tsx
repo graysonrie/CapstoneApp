@@ -28,7 +28,7 @@ export default function SignupForm() {
   return (
     <div className="">
       <div className="flex w-full justify-center py-8">
-        <p className="font-bold text-xl">Sign Up</p>
+        <p className="font-bold text-xl">Sign up for your account</p>
       </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <FieldGroup className="gap-5">

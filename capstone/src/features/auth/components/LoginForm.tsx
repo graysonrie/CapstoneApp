@@ -28,30 +28,10 @@ export default function LoginForm() {
   return (
     <div className="">
       <div className="flex w-full justify-center py-8">
-        <p className="font-bold text-xl">Log In</p>
+        <p className="font-bold text-xl">Welcome</p>
       </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <FieldGroup className="gap-5">
-          <Field>
-            <FieldLabel htmlFor="login-name" className="text-md">
-              Name
-            </FieldLabel>
-            <InputGroup className="h-15">
-              <InputGroupAddon>
-                <User aria-hidden className="size-5" />
-              </InputGroupAddon>
-              <InputGroupInput
-                id="login-name"
-                type="name"
-                autoComplete="name"
-                placeholder="Richter Belmont"
-                value={name}
-                onChange={(event) => setValues({ name: event.target.value })}
-                required
-                className="text-lg"
-              />
-            </InputGroup>
-          </Field>
           <Field>
             <FieldLabel htmlFor="login-email" className="text-md">
               Email
@@ -64,7 +44,7 @@ export default function LoginForm() {
                 id="login-email"
                 type="email"
                 autoComplete="email"
-                placeholder="your_email@example.com"
+                placeholder="Email"
                 value={email}
                 onChange={(event) => setValues({ email: event.target.value })}
                 required
@@ -84,7 +64,7 @@ export default function LoginForm() {
                 id="login-password"
                 type="password"
                 autoComplete="current-password"
-                placeholder="Minimum 8 characters"
+                placeholder="Password"
                 value={password}
                 onChange={(event) =>
                   setValues({ password: event.target.value })
@@ -110,7 +90,7 @@ export default function LoginForm() {
           className="w-full "
           disabled={loginMutation.isPending}
         >
-          {loginMutation.isPending ? "Signing in…" : "Sign in"}
+          {loginMutation.isPending ? "Logging in…" : "Log In"}
         </Button>
       </form>
     </div>
