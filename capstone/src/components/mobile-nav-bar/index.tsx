@@ -2,23 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Camera, Home, LogIn, User } from "lucide-react";
+import { Camera, Home, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useMobileNavBarStore } from "./useMobileNavBarStore";
+import { useIsValidSession } from "@/features/auth/hooks/useIsValidSession";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Home", icon: Home },
+  { href: "/home", label: "Home", icon: Home },
   { href: "/plant_screenshot", label: "Scan", icon: Camera },
   { href: "/profile", label: "Profile", icon: User },
-  { href: "/login", label: "Login", icon: LogIn },
 ] as const;
 
 export default function MobileNavBar() {
   const pathname = usePathname();
+  const { data: isLoggedIn, isLoading } = useIsValidSession();
 
-  const { shouldShow } = useMobileNavBarStore();
-
-  if (!shouldShow) {
+  if (isLoading || !isLoggedIn) {
     return null;
   }
 
@@ -30,7 +28,7 @@ export default function MobileNavBar() {
       <ul className="mx-auto flex h-16 max-w-lg items-stretch justify-around px-2">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const isActive =
-            href === "/" ? pathname === "/" : pathname.startsWith(href);
+            pathname === href || pathname.startsWith(`${href}/`);
 
           return (
             <li key={href} className="flex flex-1">

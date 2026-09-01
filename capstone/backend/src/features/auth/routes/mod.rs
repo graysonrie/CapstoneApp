@@ -1,4 +1,9 @@
-use axum::{Json, Router, extract::State, http::StatusCode, routing::{get, post}};
+use axum::{
+    Json, Router,
+    extract::State,
+    http::StatusCode,
+    routing::{get, post},
+};
 
 mod dev;
 
@@ -11,12 +16,11 @@ use crate::{
     environment,
     features::{
         auth::{
-            middleware::{require_auth, AuthenticatedUser},
             Role,
+            middleware::{AuthenticatedUser, require_auth},
             service::AccessTokenIssueSettings,
         },
-        email_server,
-        user,
+        email_server, user,
     },
     state::AppState,
 };
@@ -73,6 +77,10 @@ async fn register_start(
 
     // Return early if we don't require email verification
     if !state.app_config.auth.require_email_verification {
+        service::force_verify_email(&state.db, user_id)
+            .await
+            .map_err(AuthHttpError::from)?;
+
         return Ok(Json(RegisterAttemptedResponse {
             user_id: Some(user_id),
             email_verification_code: None,

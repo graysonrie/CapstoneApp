@@ -242,6 +242,14 @@ pub async fn verify_email(
     }
 }
 
+pub async fn force_verify_email(
+    db: &sea_orm::DatabaseConnection,
+    user_id: i32,
+) -> Result<(), AuthError> {
+    repo::set_email_verified(db, user_id, true).await?;
+    Ok(())
+}
+
 pub async fn prepare_verification_email_resend(
     db: &sea_orm::DatabaseConnection,
     clock: &impl Clock,

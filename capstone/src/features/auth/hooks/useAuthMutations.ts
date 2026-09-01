@@ -1,18 +1,17 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { login, signup } from "@/features/auth/api/mockAuth";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import type { LoginInput, SignupInput, User } from "@/features/auth/types";
+import { logIn, LogInParams, signUp, SignUpParams } from "@/generated";
+import { sessionQueryKey } from "./useIsValidSession";
 
 function useAuthSuccess() {
   const router = useRouter();
-  const setUser = useAuthStore((state) => state.setUser);
+  const queryClient = useQueryClient();
 
-  return (user: User) => {
-    setUser(user);
-    router.push("/");
+  return () => {
+    queryClient.setQueryData(sessionQueryKey, true);
+    router.push("/home");
   };
 }
 
@@ -20,7 +19,7 @@ export function useLoginMutation() {
   const onAuthSuccess = useAuthSuccess();
 
   return useMutation({
-    mutationFn: (input: LoginInput) => login(input),
+    mutationFn: (input: LogInParams) => logIn(input),
     onSuccess: onAuthSuccess,
   });
 }
@@ -29,7 +28,7 @@ export function useSignupMutation() {
   const onAuthSuccess = useAuthSuccess();
 
   return useMutation({
-    mutationFn: (input: SignupInput) => signup(input),
+    mutationFn: (input: SignUpParams) => signUp(input),
     onSuccess: onAuthSuccess,
   });
 }

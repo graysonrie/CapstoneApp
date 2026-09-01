@@ -44,3 +44,4 @@ impl IntoResponse for AuthHttpError {
         (status, body).into_response()
     }
 }
+

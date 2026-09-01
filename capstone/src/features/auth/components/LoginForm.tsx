@@ -20,7 +20,7 @@ export default function LoginForm() {
   const { name, password, email, setValues } = useAuthFormStore();
   const loginMutation = useLoginMutation();
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: React.ChangeEvent<HTMLFormElement>) {
     event.preventDefault();
     loginMutation.mutate({ email, password });
   }
