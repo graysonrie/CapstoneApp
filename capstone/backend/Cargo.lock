@@ -4185,7 +4185,6 @@ checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
 name = "tb_client"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "reqwest",
  "serde",
  "serde_json",
@@ -4469,7 +4468,6 @@ checksum = "8df9b6e13f2d32c91b9bd719c00d1958837bc7dec474d94952798cc8e69eeec3"
 name = "toxic_brainz_server"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "argon2",
  "axum",
  "bcrypt",
@@ -4493,6 +4491,7 @@ dependencies = [
  "serde_with",
  "server_types",
  "tb_client",
+ "thiserror",
  "tokio",
  "tower-http",
  "tracing",

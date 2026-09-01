@@ -15,4 +15,3 @@ reqwest = { version = "0.12.11", features = ["json", "multipart"] }
 server_types = { path = "../server_types" }
 url = "2"
 thiserror = "2.0.0"
-anyhow = "1.0.9"

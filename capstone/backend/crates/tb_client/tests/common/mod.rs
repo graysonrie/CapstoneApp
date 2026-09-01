@@ -4,6 +4,8 @@ use addin_server_interactor::{
     ApiClient,
     csharp::{BuiltCSharpProjectOutput, CSharpError},
 };
+use tb_client::ClientError;
+
 use server_types::{
     auth::responses::{RegisterAttemptedResponse, VerifyEmailResponse},
     user::RoleType,
@@ -65,13 +67,13 @@ pub async fn log_in_as_super_admin(client: &ApiClient) {
         .unwrap();
 }
 
-pub async fn reset_db(client: &ApiClient) -> Result<(), anyhow::Error> {
+pub async fn reset_db(client: &ApiClient) -> Result<(), ClientError> {
     client.dev_client().erase_db().await
 }
 
 #[allow(dead_code)]
 /// Registers a new user with EMAIL and verifies the password
-pub async fn register_verified_user_into_db() -> Result<VerifyEmailResponse, anyhow::Error> {
+pub async fn register_verified_user_into_db() -> Result<VerifyEmailResponse, ClientError> {
     let client = ApiClient::default();
 
     let response = client.auth_client().register_start(EMAIL, PASSWORD).await;
@@ -87,7 +89,7 @@ pub async fn register_verified_user_into_db() -> Result<VerifyEmailResponse, any
 
 #[allow(dead_code)]
 /// Registers a new user with EMAIL
-pub async fn register_user_into_db() -> Result<RegisterAttemptedResponse, anyhow::Error> {
+pub async fn register_user_into_db() -> Result<RegisterAttemptedResponse, ClientError> {
     register_certain_user_into_db(EMAIL, PASSWORD).await
 }
 
@@ -96,7 +98,7 @@ pub async fn register_user_into_db() -> Result<RegisterAttemptedResponse, anyhow
 pub async fn register_certain_user_into_db(
     email: &str,
     password: &str,
-) -> Result<RegisterAttemptedResponse, anyhow::Error> {
+) -> Result<RegisterAttemptedResponse, ClientError> {
     let client = ApiClient::default();
 
     client.auth_client().register_start(email, password).await

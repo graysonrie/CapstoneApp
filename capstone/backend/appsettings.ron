@@ -7,7 +7,7 @@ AppConfig(
     jwt_secret:"change-me",
     access_token_ttl:"15m",
     refresh_token_ttl:"15d",
-    require_email_verification: true,
+    require_email_verification: false,
   ),
   db: DbConfig(
     url:"",

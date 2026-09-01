@@ -1,31 +1,22 @@
 use axum::extract::multipart::{Field, MultipartError};
+use thiserror::Error;
 
 use crate::features::file_storage::file_storage_trait::FileStorageStateType;
+use crate::features::file_storage::FileStorageError;
 
+#[derive(Debug, Error)]
 pub enum MultipartReaderError {
-    Axum(MultipartError),
+    #[error(transparent)]
+    Axum(#[from] MultipartError),
+
+    #[error("incorrect multipart format")]
     IncorrectMultipartFormat,
-    Io(std::io::Error),
-    Storage(anyhow::Error),
-}
 
-#[allow(clippy::from_over_into)]
-impl Into<MultipartReaderError> for std::io::Error {
-    fn into(self) -> MultipartReaderError {
-        MultipartReaderError::Io(self)
-    }
-}
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
 
-impl From<anyhow::Error> for MultipartReaderError {
-    fn from(value: anyhow::Error) -> Self {
-        MultipartReaderError::Storage(value)
-    }
-}
-
-impl From<MultipartError> for MultipartReaderError {
-    fn from(value: MultipartError) -> Self {
-        MultipartReaderError::Axum(value)
-    }
+    #[error(transparent)]
+    Storage(#[from] FileStorageError),
 }
 
 /// Streams a multipart field into storage at `relative_path` (e.g. `"AddinsLibrary/v1/my_addin/data.bin"`).

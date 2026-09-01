@@ -1,4 +1,4 @@
-use axum::{Json, Router, extract::State, http::StatusCode, routing::post};
+use axum::{Json, Router, extract::State, http::StatusCode, routing::{get, post}};
 
 mod dev;
 
@@ -10,18 +10,28 @@ use crate::{
     app_config::AppConfig,
     environment,
     features::{
-        auth::{Role, service::AccessTokenIssueSettings},
+        auth::{
+            middleware::{require_auth, AuthenticatedUser},
+            Role,
+            service::AccessTokenIssueSettings,
+        },
         email_server,
+        user,
     },
     state::AppState,
 };
 use server_types::prelude::*;
 
-pub fn auth_router(config: &AppConfig) -> Router<AppState> {
+pub fn auth_router(config: &AppConfig, state: AppState) -> Router<AppState> {
+    let session_routes = Router::new()
+        .route("/auth/session", get(session))
+        .route_layer(axum::middleware::from_fn_with_state(state, require_auth));
+
     let router = Router::new()
         .route("/auth/register/start", post(register_start))
         .route("/auth/login", post(login))
-        .route("/auth/refresh", post(refresh));
+        .route("/auth/refresh", post(refresh))
+        .merge(session_routes);
 
     let router = if config.auth.require_email_verification {
         tracing::info!(
@@ -35,6 +45,20 @@ pub fn auth_router(config: &AppConfig) -> Router<AppState> {
     };
 
     dev::map_routes_if_in_dev(router)
+}
+
+async fn session(
+    user: AuthenticatedUser,
+    State(state): State<AppState>,
+) -> Result<Json<SessionResponse>, StatusCode> {
+    let user = user::service::get_user_by_id(&state.db, user.user_id)
+        .await
+        .map_err(|_| StatusCode::UNAUTHORIZED)?;
+
+    Ok(Json(SessionResponse {
+        user_id: user.id,
+        email: user.email,
+    }))
 }
 
 /// Creates a temp user

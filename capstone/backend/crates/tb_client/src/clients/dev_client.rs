@@ -1,4 +1,4 @@
-use crate::{ApiClient, util::parse_empty_response};
+use crate::{ApiClient, ClientResult, util::parse_empty_response};
 
 pub struct DevClient<'a> {
     api: &'a ApiClient,
@@ -8,7 +8,7 @@ impl<'a> DevClient<'a> {
         Self { api }
     }
 
-    pub async fn erase_db(&self) -> Result<(), anyhow::Error> {
+    pub async fn erase_db(&self) -> ClientResult<()> {
         let response = self
             .api
             .http

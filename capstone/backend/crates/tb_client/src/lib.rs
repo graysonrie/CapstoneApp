@@ -1,11 +1,14 @@
 pub mod clients;
+mod error;
 mod util;
-use clients::{AuthClient, ClockClient, TestClient, UserClient};
+
+pub use clients::{AuthClient, ClockClient, DevClient, TestClient, UserClient};
+pub use error::{ClientError, ClientResult};
 use reqwest::RequestBuilder;
 use std::sync::RwLock;
 use url::Url;
 
-use crate::clients::DevClient;
+use crate::error::ClientError::*;
 
 const DEFAULT_SERVER_ENDPOINT: &str = "http://127.0.0.1:3001";
 
@@ -33,64 +36,58 @@ impl ApiClient {
         }
     }
 
-    pub fn set_auth_token(&self, token: String) -> anyhow::Result<()> {
-        let mut auth_token = self
-            .auth_token
-            .write()
-            .map_err(|_| anyhow::anyhow!("auth token lock poisoned"))?;
+    pub fn set_auth_token(&self, token: String) -> ClientResult<()> {
+        let mut auth_token = self.auth_token.write().map_err(|_| AuthTokenLockPoisoned)?;
         *auth_token = Some(token);
         Ok(())
     }
 
-    pub fn clear_auth_token(&self) -> anyhow::Result<()> {
-        let mut auth_token = self
-            .auth_token
-            .write()
-            .map_err(|_| anyhow::anyhow!("auth token lock poisoned"))?;
+    pub fn clear_auth_token(&self) -> ClientResult<()> {
+        let mut auth_token = self.auth_token.write().map_err(|_| AuthTokenLockPoisoned)?;
         *auth_token = None;
         Ok(())
     }
 
-    pub fn set_refresh_token(&self, token: String) -> anyhow::Result<()> {
+    pub fn set_refresh_token(&self, token: String) -> ClientResult<()> {
         let mut refresh_token = self
             .refresh_token
             .write()
-            .map_err(|_| anyhow::anyhow!("refresh token lock poisoned"))?;
+            .map_err(|_| RefreshTokenLockPoisoned)?;
         *refresh_token = Some(token);
         Ok(())
     }
 
-    pub fn clear_refresh_token(&self) -> anyhow::Result<()> {
+    pub fn clear_refresh_token(&self) -> ClientResult<()> {
         let mut refresh_token = self
             .refresh_token
             .write()
-            .map_err(|_| anyhow::anyhow!("refresh token lock poisoned"))?;
+            .map_err(|_| RefreshTokenLockPoisoned)?;
         *refresh_token = None;
         Ok(())
     }
 
-    pub fn stored_refresh_token(&self) -> anyhow::Result<String> {
+    pub fn stored_refresh_token(&self) -> ClientResult<String> {
         self.refresh_token
             .read()
-            .map_err(|_| anyhow::anyhow!("refresh token lock poisoned"))?
+            .map_err(|_| RefreshTokenLockPoisoned)?
             .clone()
-            .ok_or_else(|| anyhow::anyhow!("no refresh token has been saved; call login first"))
+            .ok_or(RefreshTokenNotSet)
     }
 
-    pub(crate) fn refresh_token(&self) -> anyhow::Result<String> {
+    pub(crate) fn refresh_token(&self) -> ClientResult<String> {
         self.stored_refresh_token()
     }
 
     pub(crate) fn authenticated_request(
         &self,
         request: RequestBuilder,
-    ) -> anyhow::Result<RequestBuilder> {
+    ) -> ClientResult<RequestBuilder> {
         let token = self
             .auth_token
             .read()
-            .map_err(|_| anyhow::anyhow!("auth token lock poisoned"))?
+            .map_err(|_| AuthTokenLockPoisoned)?
             .clone()
-            .ok_or_else(|| anyhow::anyhow!("no auth token has been saved; call login first"))?;
+            .ok_or(AuthTokenNotSet)?;
 
         Ok(request.bearer_auth(token))
     }

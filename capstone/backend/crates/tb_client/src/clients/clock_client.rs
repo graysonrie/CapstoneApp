@@ -1,4 +1,4 @@
-use crate::{ApiClient, util::parse_json_response};
+use crate::{ApiClient, ClientResult, util::parse_json_response};
 use server_types::prelude::*;
 
 pub struct ClockClient<'a> {
@@ -11,7 +11,7 @@ impl<'a> ClockClient<'a> {
     }
 
     #[cfg(feature = "dev")]
-    pub async fn get(&self) -> Result<ClockStatusResponse, anyhow::Error> {
+    pub async fn get(&self) -> ClientResult<ClockStatusResponse> {
         let response = self
             .api
             .http
@@ -22,7 +22,7 @@ impl<'a> ClockClient<'a> {
     }
 
     #[cfg(feature = "dev")]
-    pub async fn advance(&self, seconds: i64) -> Result<ClockStatusResponse, anyhow::Error> {
+    pub async fn advance(&self, seconds: i64) -> ClientResult<ClockStatusResponse> {
         let response = self
             .api
             .http
@@ -34,7 +34,7 @@ impl<'a> ClockClient<'a> {
     }
 
     #[cfg(feature = "dev")]
-    pub async fn reset(&self) -> Result<ClockStatusResponse, anyhow::Error> {
+    pub async fn reset(&self) -> ClientResult<ClockStatusResponse> {
         let response = self
             .api
             .http

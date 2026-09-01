@@ -1,13 +1,11 @@
+use tb_client::ApiClient;
+
 use crate::prelude::*;
-use crate::services::AppSaveService;
-use crate::services::TestService;
 
 pub fn register_services(handle: &AppHandle) {
     let handle = handle.clone();
 
-    let app_save_service = Arc::new(AppSaveService::new(handle.clone()));
-    handle.manage(app_save_service.clone());
-
-    let test_service = Arc::new(TestService::default());
-    handle.manage(test_service);
+    let server_endpoint = "http://127.0.0.1:3001";
+    let backend_api = Arc::new(ApiClient::new(server_endpoint));
+    handle.manage(backend_api);
 }

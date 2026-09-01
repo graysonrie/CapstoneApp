@@ -52,7 +52,7 @@ async fn hello_handler() -> Json<HelloResponse> {
 pub fn app_router(state: AppState, config: &AppConfig) -> Router {
     Router::new()
         .route("/hello", get(hello_handler))
-        .merge(auth_router(config))
+        .merge(auth_router(config, state.clone()))
         .merge(clock_router())
         .merge(user_router(state.clone()))
         .merge(dev_router())

@@ -5,34 +5,35 @@ use sea_orm::entity::prelude::async_trait::async_trait;
 use tokio::{fs, io::AsyncWriteExt};
 
 use crate::app_config::AppConfig;
+use crate::features::file_storage::{FileStorageError, FileStorageResult};
 
 pub type FileStorageStateType = Arc<dyn FileStorage + Send + Sync>;
 
 #[async_trait]
 pub trait FileStorage {
-    async fn create_dir_all(&self, relative_path: &str) -> Result<(), anyhow::Error>;
-    async fn directory_exists(&self, relative_path: &str) -> Result<bool, anyhow::Error>;
-    async fn file_exists(&self, relative_path: &str) -> Result<bool, anyhow::Error>;
+    async fn create_dir_all(&self, relative_path: &str) -> FileStorageResult<()>;
+    async fn directory_exists(&self, relative_path: &str) -> FileStorageResult<bool>;
+    async fn file_exists(&self, relative_path: &str) -> FileStorageResult<bool>;
     /// If you want to get the directories too, use `get_files_and_directories_in_dir` instead
-    async fn get_files_in_dir(&self, relative_path: &str) -> Result<Vec<String>, anyhow::Error>;
+    async fn get_files_in_dir(&self, relative_path: &str) -> FileStorageResult<Vec<String>>;
     async fn get_files_and_directories_in_dir(
         &self,
         relative_path: &str,
-    ) -> Result<Vec<String>, anyhow::Error>;
-    async fn delete_dir(&self, relative_path: &str) -> Result<(), anyhow::Error>;
+    ) -> FileStorageResult<Vec<String>>;
+    async fn delete_dir(&self, relative_path: &str) -> FileStorageResult<()>;
     async fn write_file_bytes(
         &self,
         relative_path: &str,
         bytes: &[u8],
-    ) -> Result<(), anyhow::Error>;
+    ) -> FileStorageResult<()>;
     /// Appends bytes to a file, creating the file and parent directories if needed.
     async fn append_file_bytes(
         &self,
         relative_path: &str,
         bytes: &[u8],
-    ) -> Result<(), anyhow::Error>;
-    async fn delete_file(&self, relative_path: &str) -> Result<(), anyhow::Error>;
-    async fn read_file_bytes(&self, relative_path: &str) -> Result<Vec<u8>, anyhow::Error>;
+    ) -> FileStorageResult<()>;
+    async fn delete_file(&self, relative_path: &str) -> FileStorageResult<()>;
+    async fn read_file_bytes(&self, relative_path: &str) -> FileStorageResult<Vec<u8>>;
 }
 
 #[derive(Debug, Clone)]
@@ -58,20 +59,22 @@ impl LocalFileStorage {
         &self.root
     }
 
-    fn resolve_path(&self, relative_path: &str) -> Result<PathBuf, anyhow::Error> {
+    fn resolve_path(&self, relative_path: &str) -> FileStorageResult<PathBuf> {
         let relative = Path::new(relative_path);
         if relative.as_os_str().is_empty() {
-            anyhow::bail!("relative path must not be empty");
+            return Err(FileStorageError::EmptyPath);
         }
         if relative.is_absolute() {
-            anyhow::bail!("absolute paths are not allowed");
+            return Err(FileStorageError::AbsolutePathNotAllowed);
         }
         for component in relative.components() {
             if matches!(
                 component,
                 Component::ParentDir | Component::RootDir | Component::Prefix(_)
             ) {
-                anyhow::bail!("invalid path component in {relative_path:?}");
+                return Err(FileStorageError::InvalidPathComponent {
+                    path: relative_path.to_string(),
+                });
             }
         }
         Ok(self.root.join(relative))
@@ -80,13 +83,13 @@ impl LocalFileStorage {
 
 #[async_trait]
 impl FileStorage for LocalFileStorage {
-    async fn create_dir_all(&self, relative_path: &str) -> Result<(), anyhow::Error> {
+    async fn create_dir_all(&self, relative_path: &str) -> FileStorageResult<()> {
         let path = self.resolve_path(relative_path)?;
         fs::create_dir_all(path).await?;
         Ok(())
     }
 
-    async fn directory_exists(&self, relative_path: &str) -> Result<bool, anyhow::Error> {
+    async fn directory_exists(&self, relative_path: &str) -> FileStorageResult<bool> {
         let path = self.resolve_path(relative_path)?;
         match fs::metadata(path).await {
             Ok(metadata) => Ok(metadata.is_dir()),
@@ -95,7 +98,7 @@ impl FileStorage for LocalFileStorage {
         }
     }
 
-    async fn file_exists(&self, relative_path: &str) -> Result<bool, anyhow::Error> {
+    async fn file_exists(&self, relative_path: &str) -> FileStorageResult<bool> {
         let path = self.resolve_path(relative_path)?;
         match fs::metadata(path).await {
             Ok(metadata) => Ok(metadata.is_file()),
@@ -107,7 +110,7 @@ impl FileStorage for LocalFileStorage {
     async fn get_files_and_directories_in_dir(
         &self,
         relative_path: &str,
-    ) -> Result<Vec<String>, anyhow::Error> {
+    ) -> FileStorageResult<Vec<String>> {
         let path = self.resolve_path(relative_path)?;
         let mut entries = fs::read_dir(path).await?;
         let mut files = Vec::new();
@@ -122,7 +125,7 @@ impl FileStorage for LocalFileStorage {
         Ok(files)
     }
 
-    async fn get_files_in_dir(&self, relative_path: &str) -> Result<Vec<String>, anyhow::Error> {
+    async fn get_files_in_dir(&self, relative_path: &str) -> FileStorageResult<Vec<String>> {
         let path = self.resolve_path(relative_path)?;
         let mut entries = fs::read_dir(path).await?;
         let mut files = Vec::new();
@@ -139,7 +142,7 @@ impl FileStorage for LocalFileStorage {
         Ok(files)
     }
 
-    async fn delete_dir(&self, relative_path: &str) -> Result<(), anyhow::Error> {
+    async fn delete_dir(&self, relative_path: &str) -> FileStorageResult<()> {
         let path = self.resolve_path(relative_path)?;
         match fs::remove_dir_all(path).await {
             Ok(()) => Ok(()),
@@ -152,7 +155,7 @@ impl FileStorage for LocalFileStorage {
         &self,
         relative_path: &str,
         bytes: &[u8],
-    ) -> Result<(), anyhow::Error> {
+    ) -> FileStorageResult<()> {
         let path = self.resolve_path(relative_path)?;
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent).await?;
@@ -165,7 +168,7 @@ impl FileStorage for LocalFileStorage {
         &self,
         relative_path: &str,
         bytes: &[u8],
-    ) -> Result<(), anyhow::Error> {
+    ) -> FileStorageResult<()> {
         let path = self.resolve_path(relative_path)?;
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent).await?;
@@ -179,7 +182,7 @@ impl FileStorage for LocalFileStorage {
         Ok(())
     }
 
-    async fn delete_file(&self, relative_path: &str) -> Result<(), anyhow::Error> {
+    async fn delete_file(&self, relative_path: &str) -> FileStorageResult<()> {
         let path = self.resolve_path(relative_path)?;
         match fs::remove_file(path).await {
             Ok(()) => Ok(()),
@@ -188,7 +191,7 @@ impl FileStorage for LocalFileStorage {
         }
     }
 
-    async fn read_file_bytes(&self, relative_path: &str) -> Result<Vec<u8>, anyhow::Error> {
+    async fn read_file_bytes(&self, relative_path: &str) -> FileStorageResult<Vec<u8>> {
         let path = self.resolve_path(relative_path)?;
         Ok(fs::read(path).await?)
     }

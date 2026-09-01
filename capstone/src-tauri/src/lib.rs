@@ -4,7 +4,6 @@ mod prelude;
 mod constants;
 mod commands;
 mod services;
-mod window_settings;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -29,11 +28,6 @@ pub fn run() {
             }
 
             commands::register_services(app.handle());
-
-            let window = app.get_webview_window("main").unwrap();
-
-            window_settings::set_up_window_vibrancy(&window);
-            window_settings::register_system_mica_listener(&window);
 
             Ok(())
         })

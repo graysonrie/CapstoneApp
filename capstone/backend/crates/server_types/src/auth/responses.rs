@@ -22,6 +22,12 @@ pub struct RefreshTokenResponse {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct SessionResponse {
+    pub user_id: i32,
+    pub email: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct VerifyEmailResponse {
     pub message: String,
 }

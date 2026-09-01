@@ -1,4 +1,4 @@
-use crate::{ApiClient, util::parse_empty_response};
+use crate::{ApiClient, ClientResult, util::parse_empty_response};
 
 use server_types::{prelude::*, user::RoleType};
 
@@ -10,7 +10,7 @@ impl<'a> UserClient<'a> {
     pub fn new(api: &'a ApiClient) -> Self {
         Self { api }
     }
-    pub async fn delete_user(&self, email: &str) -> Result<(), anyhow::Error> {
+    pub async fn delete_user(&self, email: &str) -> ClientResult<()> {
         let request = self
             .api
             .http
@@ -32,7 +32,7 @@ impl<'a> UserClient<'a> {
         &self,
         email: &str,
         role: RoleType,
-    ) -> Result<(), anyhow::Error> {
+    ) -> ClientResult<()> {
         let response = self
             .api
             .http

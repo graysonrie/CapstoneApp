@@ -1,4 +1,4 @@
-use crate::{ApiClient, util::parse_json_response};
+use crate::{ApiClient, ClientResult, util::parse_json_response};
 use server_types::prelude::*;
 
 pub struct AuthClient<'a> {
@@ -15,7 +15,7 @@ impl<'a> AuthClient<'a> {
         &self,
         email: &str,
         password: &str,
-    ) -> Result<RegisterAttemptedResponse, anyhow::Error> {
+    ) -> ClientResult<RegisterAttemptedResponse> {
         let response = self
             .api
             .http
@@ -29,7 +29,7 @@ impl<'a> AuthClient<'a> {
         parse_json_response(response).await
     }
 
-    pub async fn login(&self, email: &str, password: &str) -> Result<LoginResponse, anyhow::Error> {
+    pub async fn login(&self, email: &str, password: &str) -> ClientResult<LoginResponse> {
         let response = self
             .api
             .http
@@ -48,7 +48,7 @@ impl<'a> AuthClient<'a> {
         Ok(login_response)
     }
 
-    pub async fn refresh(&self) -> Result<RefreshTokenResponse, anyhow::Error> {
+    pub async fn refresh(&self) -> ClientResult<RefreshTokenResponse> {
         let refresh_token = self.api.refresh_token()?.clone();
         let response = self
             .api
@@ -68,7 +68,7 @@ impl<'a> AuthClient<'a> {
     pub async fn refresh_with_token(
         &self,
         refresh_token: &str,
-    ) -> Result<RefreshTokenResponse, anyhow::Error> {
+    ) -> ClientResult<RefreshTokenResponse> {
         let response = self
             .api
             .http
@@ -81,11 +81,20 @@ impl<'a> AuthClient<'a> {
         parse_json_response(response).await
     }
 
+    pub async fn session(&self) -> ClientResult<SessionResponse> {
+        let request = self
+            .api
+            .http
+            .get(self.api.base_url.join("/auth/session")?.to_string());
+        let response = self.api.authenticated_request(request)?.send().await?;
+        parse_json_response(response).await
+    }
+
     pub async fn verify_email(
         &self,
         email: &str,
         code: &str,
-    ) -> Result<VerifyEmailResponse, anyhow::Error> {
+    ) -> ClientResult<VerifyEmailResponse> {
         let response = self
             .api
             .http
@@ -102,7 +111,7 @@ impl<'a> AuthClient<'a> {
     pub async fn resend_verification_email(
         &self,
         email: &str,
-    ) -> Result<ResendVerificationEmailResponse, anyhow::Error> {
+    ) -> ClientResult<ResendVerificationEmailResponse> {
         let response = self
             .api
             .http
@@ -121,7 +130,7 @@ impl<'a> AuthClient<'a> {
         &self,
         email: &str,
         password: &str,
-    ) -> Result<LoginResponse, anyhow::Error> {
+    ) -> ClientResult<LoginResponse> {
         let response = self
             .api
             .http
@@ -146,7 +155,7 @@ impl<'a> AuthClient<'a> {
         &self,
         email: &str,
         password: &str,
-    ) -> Result<RegisterAttemptedResponse, anyhow::Error> {
+    ) -> ClientResult<RegisterAttemptedResponse> {
         let response = self
             .api
             .http

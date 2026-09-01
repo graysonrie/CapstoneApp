@@ -1,4 +1,4 @@
-use crate::{ApiClient, util::parse_json_response};
+use crate::{ApiClient, ClientResult, util::parse_json_response};
 use server_types::prelude::*;
 
 pub struct TestClient<'a> {
@@ -10,7 +10,7 @@ impl<'a> TestClient<'a> {
         Self { api }
     }
 
-    pub async fn hello(&self) -> Result<HelloResponse, anyhow::Error> {
+    pub async fn hello(&self) -> ClientResult<HelloResponse> {
         let response = self
             .api
             .http
