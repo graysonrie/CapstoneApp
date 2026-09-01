@@ -37,7 +37,12 @@ pub async fn require_auth(
     let token =
         bearer_token(request.headers().get(AUTHORIZATION)).ok_or(StatusCode::UNAUTHORIZED)?;
 
-    let user = authenticated_user_from_token(&state, token, false).await?;
+    let user = authenticated_user_from_token(
+        &state,
+        token,
+        state.app_config.auth.require_email_verification,
+    )
+    .await?;
     request.extensions_mut().insert(user);
 
     Ok(next.run(request).await)

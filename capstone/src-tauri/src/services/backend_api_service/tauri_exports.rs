@@ -65,9 +65,38 @@ pub async fn is_valid_session(api: BackendApiState<'_>) -> Result<bool, String> 
         Err(tb_client::ClientError::AuthTokenNotSet) => Ok(false),
         Err(err) => {
             warn!("Client error for is_valid_session: {err}");
+
+            // Access may have expired — try refresh before wiping the session.
+            if inner.stored_refresh_token().is_ok() {
+                match inner.auth_client().refresh().await {
+                    Ok(_) => match inner.auth_client().session().await {
+                        Ok(_) => return Ok(true),
+                        Err(retry_err) => {
+                            warn!("Session still invalid after refresh: {retry_err}");
+                        }
+                    },
+                    Err(refresh_err) => {
+                        warn!("Refresh failed during is_valid_session: {refresh_err}");
+                    }
+                }
+            }
+
             let _ = inner.clear_auth_token();
             let _ = inner.clear_refresh_token();
             Ok(false)
         }
     }
+}
+
+#[tauri::command]
+pub async fn log_out(api: BackendApiState<'_>) -> Result<(), String> {
+    let inner: &Arc<ApiClient> = api.inner();
+
+    if let Err(err) = inner.auth_client().logout().await {
+        warn!("Server logout failed (clearing local tokens anyway): {err}");
+        let _ = inner.clear_auth_token();
+        let _ = inner.clear_refresh_token();
+    }
+
+    Ok(())
 }

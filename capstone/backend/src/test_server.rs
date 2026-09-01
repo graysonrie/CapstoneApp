@@ -1,4 +1,5 @@
 use axum::Router;
+use std::net::SocketAddr;
 use tokio::{net::TcpListener, sync::oneshot, task::JoinHandle};
 
 use crate::app_config::AppConfig;
@@ -20,12 +21,15 @@ impl TestServer {
         let (tx, rx) = oneshot::channel::<()>();
 
         let handle = tokio::spawn(async move {
-            axum::serve(listener, app)
-                .with_graceful_shutdown(async {
-                    let _ = rx.await;
-                })
-                .await
-                .unwrap();
+            axum::serve(
+                listener,
+                app.into_make_service_with_connect_info::<SocketAddr>(),
+            )
+            .with_graceful_shutdown(async {
+                let _ = rx.await;
+            })
+            .await
+            .unwrap();
         });
 
         Self {

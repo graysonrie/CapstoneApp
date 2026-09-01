@@ -8,6 +8,7 @@ use crate::{
     features::{
         email_server::sender_trait::EmailSender, file_storage::file_storage_trait::FileStorage,
     },
+    rate_limit::RateLimiter,
 };
 
 #[derive(Clone)]
@@ -17,4 +18,5 @@ pub struct AppState {
     pub file_storage: Arc<dyn FileStorage + Send + Sync>,
     pub clock: Arc<AppClock>,
     pub app_config: Arc<AppConfig>,
+    pub rate_limiter: Arc<RateLimiter>,
 }

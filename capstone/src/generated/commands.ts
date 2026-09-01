@@ -18,6 +18,10 @@ export async function logIn(params: types.LogInParams): Promise<void> {
   return invoke('log_in', params);
 }
 
+export async function logOut(): Promise<void> {
+  return invoke('log_out');
+}
+
 export async function signUp(params: types.SignUpParams): Promise<void> {
   return invoke('sign_up', params);
 }

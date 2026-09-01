@@ -90,6 +90,22 @@ impl<'a> AuthClient<'a> {
         parse_json_response(response).await
     }
 
+    pub async fn logout(&self) -> ClientResult<()> {
+        let refresh_token = self.api.stored_refresh_token().unwrap_or_default();
+        let response = self
+            .api
+            .http
+            .post(self.api.base_url.join("/auth/logout")?.to_string())
+            .json(&RefreshTokenRequest { refresh_token })
+            .send()
+            .await?;
+
+        crate::util::parse_empty_response(response).await?;
+        let _ = self.api.clear_auth_token();
+        let _ = self.api.clear_refresh_token();
+        Ok(())
+    }
+
     pub async fn verify_email(
         &self,
         email: &str,

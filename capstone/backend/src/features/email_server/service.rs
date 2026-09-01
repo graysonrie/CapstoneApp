@@ -62,7 +62,14 @@ pub async fn verify_pending_email(
         return Err(EmailVerificationError::Expired);
     }
 
+    const MAX_ATTEMPTS: u32 = 5;
+
     if !bcrypt::verify(plaintext_code, &verification.code_hash)? {
+        let updated =
+            super::repo::increment_attempts(db, verification.id, verification.attempts).await?;
+        if updated.attempts >= MAX_ATTEMPTS {
+            super::repo::delete_by_user_id(db, user_id).await?;
+        }
         return Err(EmailVerificationError::InvalidCode);
     }
 

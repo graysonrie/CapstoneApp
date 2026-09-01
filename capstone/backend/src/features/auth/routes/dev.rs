@@ -42,6 +42,17 @@ async fn register_start_as_super_admin(
         .await
         .map_err(AuthHttpError::from)?;
 
+    if !state.app_config.auth.require_email_verification {
+        service::force_verify_email(&state.db, user_id)
+            .await
+            .map_err(AuthHttpError::from)?;
+
+        return Ok(Json(RegisterAttemptedResponse {
+            user_id: Some(user_id),
+            email_verification_code: None,
+        }));
+    }
+
     let email_response =
         email_server::service::add_pending_email_verification(&state.db, &*state.clock, user_id)
             .await

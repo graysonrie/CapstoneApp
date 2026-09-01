@@ -56,6 +56,7 @@ pub async fn default_local_state(config: AppConfig) -> AppState {
         email_sender: Arc::new(MockEmailSender),
         clock: Arc::new(AppClock::new()),
         app_config: Arc::new(config.clone()),
+        rate_limiter: Arc::new(crate::rate_limit::RateLimiter::new()),
     }
 }
 

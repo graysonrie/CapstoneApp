@@ -27,7 +27,7 @@ impl From<AuthError> for AuthHttpError {
                 tracing::error!("auth error: {err:?}");
                 (StatusCode::INTERNAL_SERVER_ERROR, "internal server error")
             }
-            AuthError::EmailNotVerified => (StatusCode::UNAUTHORIZED, "email not verified"),
+            AuthError::EmailNotVerified => (StatusCode::UNAUTHORIZED, "invalid credentials"),
             AuthError::EmailAlreadyVerified => (StatusCode::BAD_REQUEST, "email already verified"),
             AuthError::InvalidVerificationCode => (
                 StatusCode::BAD_REQUEST,

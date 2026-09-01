@@ -2,6 +2,7 @@ use axum::{
     Json, Router,
     extract::State,
     http::StatusCode,
+    middleware::from_fn_with_state,
     routing::{get, post},
 };
 
@@ -22,6 +23,7 @@ use crate::{
         },
         email_server, user,
     },
+    rate_limit::rate_limit_auth,
     state::AppState,
 };
 use server_types::prelude::*;
@@ -29,24 +31,31 @@ use server_types::prelude::*;
 pub fn auth_router(config: &AppConfig, state: AppState) -> Router<AppState> {
     let session_routes = Router::new()
         .route("/auth/session", get(session))
-        .route_layer(axum::middleware::from_fn_with_state(state, require_auth));
+        .route_layer(from_fn_with_state(state.clone(), require_auth));
 
-    let router = Router::new()
+    let public_auth_routes = Router::new()
         .route("/auth/register/start", post(register_start))
         .route("/auth/login", post(login))
         .route("/auth/refresh", post(refresh))
-        .merge(session_routes);
+        .route("/auth/logout", post(logout));
 
-    let router = if config.auth.require_email_verification {
+    let public_auth_routes = if config.auth.require_email_verification {
         tracing::info!(
             "Auth Router: Mapping email verification routes since email verification is enabled"
         );
-        router
+        public_auth_routes
             .route("/auth/email/verify", post(verify_email))
             .route("/auth/email/resend", post(resend_verification_email))
     } else {
-        router
+        public_auth_routes
     };
+
+    let public_auth_routes = public_auth_routes
+        .route_layer(from_fn_with_state(state.clone(), rate_limit_auth));
+
+    let router = Router::new()
+        .merge(public_auth_routes)
+        .merge(session_routes);
 
     dev::map_routes_if_in_dev(router)
 }
@@ -148,6 +157,19 @@ async fn refresh(
         .await
         .map(Json)
         .map_err(AuthHttpError::from)
+}
+
+async fn logout(
+    State(state): State<AppState>,
+    Json(body): Json<RefreshTokenRequest>,
+) -> Result<StatusCode, AuthHttpError> {
+    let token_settings = AccessTokenIssueSettings::new_from_config(&state.app_config);
+
+    service::logout(&state.db, &*state.clock, body, &token_settings)
+        .await
+        .map_err(AuthHttpError::from)?;
+
+    Ok(StatusCode::NO_CONTENT)
 }
 
 async fn verify_email(

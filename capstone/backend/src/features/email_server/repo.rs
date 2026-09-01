@@ -58,3 +58,17 @@ pub async fn delete_expired(
         .exec(db)
         .await
 }
+
+pub async fn increment_attempts(
+    db: &impl ConnectionTrait,
+    id: i32,
+    current_attempts: u32,
+) -> Result<email_verification::Model, DbErr> {
+    let Some(model) = Entity::find_by_id(id).one(db).await? else {
+        return Err(DbErr::Custom("email verification not found".to_string()));
+    };
+
+    let mut active: ActiveModel = model.into();
+    active.attempts = Set(current_attempts.saturating_add(1));
+    active.update(db).await
+}

@@ -217,6 +217,50 @@ pub async fn refresh_tokens(
     })
 }
 
+/// Revokes the refresh token if it is currently valid. Always succeeds from the caller's
+/// perspective when the token is already invalid (idempotent logout).
+pub async fn logout(
+    db: &sea_orm::DatabaseConnection,
+    clock: &impl Clock,
+    body: RefreshTokenRequest,
+    settings: &AccessTokenIssueSettings,
+) -> Result<(), AuthError> {
+    let refresh_token = body.refresh_token.trim();
+    if refresh_token.is_empty() {
+        return Ok(());
+    }
+
+    let Ok(claims) = tokens::decode_claims(&settings.jwt_secret, refresh_token) else {
+        return Ok(());
+    };
+
+    if claims.typ != tokens::TOKEN_TYPE_REFRESH {
+        return Ok(());
+    }
+
+    if claims.exp <= clock.now_utc().timestamp() {
+        return Ok(());
+    }
+
+    let Ok(user_id) = claims.sub.parse::<i32>() else {
+        return Ok(());
+    };
+
+    let Some(user) = repo::find_by_id(db, user_id).await? else {
+        return Ok(());
+    };
+
+    let Some(ref stored_hash) = user.refresh_token_hash else {
+        return Ok(());
+    };
+
+    if tokens::verify_refresh_token_jti(&claims.jti, stored_hash)? {
+        repo::set_refresh_token_hash(db, user.id, None).await?;
+    }
+
+    Ok(())
+}
+
 pub async fn verify_email(
     db: &sea_orm::DatabaseConnection,
     clock: &impl Clock,
