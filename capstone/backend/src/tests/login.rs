@@ -5,8 +5,8 @@ use crate::tests::utils::TestFixture;
 async fn test_root() {
     let fixture = TestFixture::new().await;
 
-    let response = fixture.client.test_client().hello().await.unwrap();
-    assert_eq!(response.message, "Hello from Axum");
+    let response = fixture.client.misc_client().ping().await;
+    assert!(response.is_ok());
 
     fixture.finish().await;
 }

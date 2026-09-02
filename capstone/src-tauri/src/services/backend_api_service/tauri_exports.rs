@@ -100,3 +100,11 @@ pub async fn log_out(api: BackendApiState<'_>) -> Result<(), String> {
 
     Ok(())
 }
+
+#[tauri::command]
+pub async fn ping(api: BackendApiState<'_>) -> Result<(), String> {
+    // Get inner otherwise RA fails to provide autocomplete
+    let inner: &Arc<ApiClient> = api.inner();
+
+    inner.misc_client().ping().await.map_err(|e| e.to_string())
+}

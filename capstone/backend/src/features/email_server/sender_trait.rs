@@ -1,7 +1,4 @@
-use std::sync::Arc;
-
-use sea_orm::entity::prelude::async_trait::async_trait;
-use thiserror::Error;
+use crate::prelude::*;
 
 pub type EmailSenderStateType = Arc<dyn EmailSender + Send + Sync>;
 

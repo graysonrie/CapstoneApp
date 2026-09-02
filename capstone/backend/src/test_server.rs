@@ -1,8 +1,7 @@
-use axum::Router;
 use std::net::SocketAddr;
 use tokio::{net::TcpListener, sync::oneshot, task::JoinHandle};
 
-use crate::app_config::AppConfig;
+use crate::prelude::*;
 
 #[allow(dead_code)]
 pub struct TestServer {

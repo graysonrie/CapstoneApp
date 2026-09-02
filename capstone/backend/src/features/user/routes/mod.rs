@@ -1,14 +1,10 @@
-use axum::{Json, Router, extract::State, routing::post};
-use server_types::user::requests::DeleteUserRequest;
 mod dev;
 
-use crate::{
-    features::{
-        auth::middleware::require_super_admin_auth,
-        user::{errors::UserHttpError, service},
-    },
-    state::AppState,
+use crate::features::{
+    auth::middleware::require_super_admin_auth,
+    user::{errors::UserHttpError, service},
 };
+use crate::prelude::*;
 
 pub fn user_router(state: AppState) -> Router<AppState> {
     let super_admin_routes = Router::new()

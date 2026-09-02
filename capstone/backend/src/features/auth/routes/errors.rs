@@ -1,9 +1,5 @@
-use axum::{
-    http::StatusCode,
-    response::{IntoResponse, Response},
-};
-
 use crate::features::auth::service::AuthError;
+use crate::prelude::*;
 
 pub struct AuthHttpError(pub (StatusCode, String));
 

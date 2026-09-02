@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Camera, Home, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsValidSession } from "@/features/auth/hooks/useIsValidSession";
+import { useAppStore } from "@/stores/useAppStore";
 
 const NAV_ITEMS = [
   { href: "/home", label: "Home", icon: Home },
@@ -15,20 +16,20 @@ const NAV_ITEMS = [
 export default function MobileNavBar() {
   const pathname = usePathname();
   const { data: isLoggedIn, isLoading } = useIsValidSession();
+  const { isConfirmedOffline } = useAppStore();
 
-  if (isLoading || !isLoggedIn) {
+  if (!isConfirmedOffline && (isLoading || !isLoggedIn)) {
     return null;
   }
 
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-50 mx-4 mb-[max(1rem,env(safe-area-inset-bottom))] rounded-full border border-background bg-background/60 backdrop-blur-sm"
+      className="fixed inset-x-0 bottom-0 z-50 mx-4 mb-[max(1rem,env(safe-area-inset-bottom))] rounded-full border border-border bg-background/60 backdrop-blur-sm"
     >
       <ul className="mx-auto flex h-16 max-w-lg items-stretch justify-around px-2">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const isActive =
-            pathname === href || pathname.startsWith(`${href}/`);
+          const isActive = pathname === href || pathname.startsWith(`${href}/`);
 
           return (
             <li key={href} className="flex flex-1">
@@ -38,7 +39,7 @@ export default function MobileNavBar() {
                 className={cn(
                   "flex flex-1 flex-col items-center justify-center gap-0.5 text-xs font-medium transition-colors active:scale-95",
                   isActive
-                    ? "text-primary"
+                    ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >

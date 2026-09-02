@@ -1,12 +1,5 @@
-use sea_orm::{
-    ActiveModelTrait, ActiveValue::NotSet, ColumnTrait, ConnectionTrait, DbErr, DeleteResult,
-    EntityTrait, QueryFilter, Set, entity::prelude::DateTimeWithTimeZone,
-};
-
-use crate::features::db::models::{
-    email_verification::{self, ActiveModel, Column, Entity},
-    user::UserIdType,
-};
+use crate::features::db::models::email_verification::{self, ActiveModel, Column, Entity};
+use crate::prelude::*;
 
 pub async fn create_email(
     db: &impl ConnectionTrait,

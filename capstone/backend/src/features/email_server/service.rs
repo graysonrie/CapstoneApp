@@ -1,10 +1,8 @@
 use rand::RngExt;
 use rand::rand_core::UnwrapErr;
 use rand::rngs::SysRng;
-use sea_orm::DbErr;
-use server_types::email_sender::responses::PendingEmailVerificationResponse;
 
-use crate::{clock::Clock, features::db::models::user::UserIdType};
+use crate::prelude::*;
 
 #[derive(Debug)]
 pub enum EmailVerificationError {

@@ -1,7 +1,4 @@
 use super::*;
-use axum::Router;
-
-use crate::{environment::is_dev, state::AppState};
 
 /// ONLY implements the routes if in dev mode
 pub fn map_routes_if_in_dev(router: Router<AppState>) -> Router<AppState> {

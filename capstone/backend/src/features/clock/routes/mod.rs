@@ -1,6 +1,4 @@
-use axum::Router;
-
-use crate::state::AppState;
+use crate::prelude::*;
 
 mod dev;
 

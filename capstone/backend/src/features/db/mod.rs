@@ -1,10 +1,9 @@
 use std::fs::File;
-use std::path::Path;
 
 use migration::{Migrator, MigratorTrait};
-use sea_orm::{ConnectionTrait, DatabaseConnection, DbErr, EntityTrait, Schema};
+use sea_orm::Schema;
 
-use crate::{app_config::AppConfig, environment};
+use crate::prelude::*;
 pub mod models;
 
 async fn ensure_user_table(db: &sea_orm::DatabaseConnection) -> Result<(), sea_orm::DbErr> {

@@ -3,9 +3,8 @@ use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, deco
 use rand::RngExt;
 use rand::rand_core::UnwrapErr;
 use rand::rngs::SysRng;
-use serde::{Deserialize, Serialize};
 
-use crate::clock::Clock;
+use crate::prelude::*;
 
 pub const TOKEN_TYPE_ACCESS: &str = "access";
 pub const TOKEN_TYPE_REFRESH: &str = "refresh";

@@ -1,8 +1,4 @@
-use axum::{
-    http::StatusCode,
-    response::{IntoResponse, Response},
-};
-use sea_orm::DbErr;
+use crate::prelude::*;
 
 pub struct UserHttpError(pub (StatusCode, String));
 

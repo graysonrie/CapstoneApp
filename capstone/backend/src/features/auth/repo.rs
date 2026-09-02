@@ -1,12 +1,5 @@
-use sea_orm::{
-    ActiveModelTrait, ActiveValue::NotSet, ColumnTrait, ConnectionTrait, DbErr, EntityTrait,
-    QueryFilter, Set, UpdateResult, entity::prelude::DateTimeWithTimeZone,
-};
-
-use crate::features::{
-    auth::Role,
-    db::models::user::{self, ActiveModel, Column, Entity},
-};
+use crate::features::db::models::user::{self, ActiveModel, Column, Entity};
+use crate::prelude::*;
 
 pub async fn find_by_email(
     db: &impl ConnectionTrait,

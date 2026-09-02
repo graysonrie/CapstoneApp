@@ -34,7 +34,7 @@ impl AppClock {
 
     pub fn advance_seconds(&self, seconds: i64) -> Result<i64, ClockError> {
         self.offset_seconds
-            .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |current| {
+            .try_update(Ordering::SeqCst, Ordering::SeqCst, |current| {
                 let next = current.checked_add(seconds)?;
                 if next.abs() > MAX_OFFSET_SECONDS {
                     return None;

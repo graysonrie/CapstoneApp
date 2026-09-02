@@ -1,8 +1,8 @@
 use axum::extract::multipart::{Field, MultipartError};
-use thiserror::Error;
 
 use crate::features::file_storage::file_storage_trait::FileStorageStateType;
 use crate::features::file_storage::FileStorageError;
+use crate::prelude::*;
 
 #[derive(Debug, Error)]
 pub enum MultipartReaderError {

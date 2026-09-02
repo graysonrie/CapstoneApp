@@ -1,23 +1,20 @@
-use axum::{Json, Router, routing::get};
 use features::{auth::auth_router, clock::routes::clock_router, user::routes::user_router};
-use server_types::responses::HelloResponse;
-use std::{net::SocketAddr, sync::Arc};
+use std::net::SocketAddr;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+use crate::prelude::*;
 use crate::{
-    app_config::AppConfig,
-    clock::AppClock,
     features::{
         dev::routes::dev_router, email_server::sender_trait::MockEmailSender,
         file_storage::file_storage_trait::LocalFileStorage,
     },
     rate_limit::RateLimiter,
-    state::AppState,
 };
 mod app_config;
 mod clock;
-mod environment;
+pub mod environment;
 pub mod features;
+mod prelude;
 mod rate_limit;
 mod state;
 mod test_server;
@@ -87,15 +84,13 @@ fn validate_startup_config(config: &AppConfig) {
     }
 }
 
-async fn hello_handler() -> Json<HelloResponse> {
-    Json(HelloResponse {
-        message: "Hello from Axum".to_string(),
-    })
+async fn ping() -> Result<(), ()> {
+    Ok(())
 }
 
 pub fn app_router(state: AppState, config: &AppConfig) -> Router {
     Router::new()
-        .route("/hello", get(hello_handler))
+        .route("/ping", get(ping))
         .merge(auth_router(config, state.clone()))
         .merge(clock_router())
         .merge(user_router(state.clone()))

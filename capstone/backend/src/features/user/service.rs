@@ -1,7 +1,6 @@
-use sea_orm::{ActiveValue::Set, DbErr};
-
 use super::repo;
-use crate::features::{auth::Role, db::models::user};
+use crate::features::db::models::user;
+use crate::prelude::*;
 
 pub async fn delete_user_with_email(
     db: &sea_orm::DatabaseConnection,

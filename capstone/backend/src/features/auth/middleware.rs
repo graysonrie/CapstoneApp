@@ -1,12 +1,11 @@
 use axum::{
-    extract::{FromRequestParts, Request, State},
-    http::{StatusCode, header::AUTHORIZATION, request::Parts},
+    extract::FromRequestParts,
+    http::{header::AUTHORIZATION, request::Parts},
     middleware::Next,
-    response::Response,
 };
 
 use super::service;
-use crate::{features::auth::Role, state::AppState};
+use crate::prelude::*;
 
 #[derive(Clone, Debug)]
 pub struct AuthenticatedUser {

@@ -1,19 +1,11 @@
 use chrono::Duration;
-use sea_orm::DbErr;
-
-use crate::{
-    app_config::AppConfig,
-    clock::Clock,
-    environment,
-    features::{
-        auth::Role,
-        db::models::user::{self, UserIdType},
-        email_server::{self, service::EmailVerificationError},
-    },
-};
 
 use super::{password, repo, tokens};
-use server_types::prelude::*;
+use crate::features::{
+    db::models::user,
+    email_server::{self, service::EmailVerificationError},
+};
+use crate::prelude::*;
 
 #[derive(Clone, Debug)]
 pub struct AccessTokenIssueSettings {

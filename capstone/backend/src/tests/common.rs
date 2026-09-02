@@ -1,14 +1,6 @@
-use std::path::Path;
+use tb_client::{ApiClient, ClientError};
 
-use tb_client::{
-    ApiClient,
-};
-use tb_client::ClientError;
-
-use server_types::{
-    auth::responses::{RegisterAttemptedResponse, VerifyEmailResponse},
-    user::RoleType,
-};
+use crate::prelude::*;
 
 pub const EMAIL: &str = "myemail@email.com";
 pub const PASSWORD: &str = "testpassword";
@@ -25,13 +17,6 @@ pub const PASSWORD2: &str = "testpassword2";
 #[allow(dead_code)]
 pub const EXPIRING_EMAIL: &str = "expiring.email@example.com";
 
-#[allow(dead_code)]
-pub const TEST_LOCAL_SERVER_PATH: &str =
-    "C:\\Users\\GRieger\\Desktop\\rust\\addinmanager2_dev\\TEST_LOCAL_SERVER";
-
-#[allow(dead_code)]
-pub const SAMPLE_CSPROJ_PATH: &str =
-    "C:\\Users\\GRieger\\source\\repos\\RealTabColorizer\\TabColorizer\\TabColorizer.csproj";
 
 #[allow(dead_code)]
 pub async fn log_in_as_super_admin(client: &ApiClient) {
@@ -104,11 +89,4 @@ pub async fn register_certain_user_into_db(
     password: &str,
 ) -> Result<RegisterAttemptedResponse, ClientError> {
     client.auth_client().register_start(email, password).await
-}
-
-#[allow(dead_code)]
-pub async fn clear_test_local_server() {
-    let path = Path::new(TEST_LOCAL_SERVER_PATH).canonicalize().unwrap();
-    let _ = tokio::fs::remove_dir_all(&path).await;
-    let _ = tokio::fs::create_dir_all(&path).await;
 }

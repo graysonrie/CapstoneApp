@@ -1,10 +1,4 @@
-use axum::{
-    Json, Router,
-    extract::State,
-    http::StatusCode,
-    middleware::from_fn_with_state,
-    routing::{get, post},
-};
+use axum::middleware::from_fn_with_state;
 
 mod dev;
 
@@ -12,21 +6,15 @@ mod errors;
 use errors::*;
 
 use super::service;
-use crate::{
-    app_config::AppConfig,
-    environment,
-    features::{
-        auth::{
-            Role,
-            middleware::{AuthenticatedUser, require_auth},
-            service::AccessTokenIssueSettings,
-        },
-        email_server, user,
+use crate::features::{
+    auth::{
+        middleware::{AuthenticatedUser, require_auth},
+        service::AccessTokenIssueSettings,
     },
-    rate_limit::rate_limit_auth,
-    state::AppState,
+    email_server, user,
 };
-use server_types::prelude::*;
+use crate::prelude::*;
+use crate::rate_limit::rate_limit_auth;
 
 pub fn auth_router(config: &AppConfig, state: AppState) -> Router<AppState> {
     let session_routes = Router::new()

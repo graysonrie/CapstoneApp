@@ -1,18 +1,16 @@
-use std::{fs, sync::Arc, time::Duration};
+use std::{fs, time::Duration};
 
 use tb_client::ApiClient;
 
+use crate::prelude::*;
 use crate::{
-    app_config::{
-        AppConfig, AuthConfig, DbConfig, FileStorageConfig, LocalSqliteConfig, ServerConfig,
-    },
+    app_config::{AuthConfig, DbConfig, FileStorageConfig, LocalSqliteConfig, ServerConfig},
     app_router,
-    clock::AppClock,
     features::{
         self, email_server::sender_trait::MockEmailSender,
         file_storage::file_storage_trait::LocalFileStorage,
     },
-    state::AppState,
+    rate_limit::RateLimiter,
     test_server::TestServer,
 };
 
@@ -56,7 +54,7 @@ pub async fn default_local_state(config: AppConfig) -> AppState {
         email_sender: Arc::new(MockEmailSender),
         clock: Arc::new(AppClock::new()),
         app_config: Arc::new(config.clone()),
-        rate_limiter: Arc::new(crate::rate_limit::RateLimiter::new()),
+        rate_limiter: Arc::new(RateLimiter::new()),
     }
 }
 

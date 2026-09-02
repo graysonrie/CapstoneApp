@@ -5,14 +5,9 @@ use std::{
     time::{Duration, Instant},
 };
 
-use axum::{
-    extract::{ConnectInfo, Request, State},
-    http::StatusCode,
-    middleware::Next,
-    response::{IntoResponse, Response},
-};
+use axum::{extract::ConnectInfo, middleware::Next};
 
-use crate::state::AppState;
+use crate::prelude::*;
 
 const WINDOW: Duration = Duration::from_secs(60);
 

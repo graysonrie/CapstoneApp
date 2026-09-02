@@ -28,7 +28,7 @@ export default function LoginForm() {
   return (
     <div className="">
       <div className="flex w-full justify-center py-8">
-        <p className="font-bold text-xl">Welcome</p>
+        <h1 className=" text-semibold text-7xl font-brand">Welcome</h1>
       </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <FieldGroup className="gap-5">

@@ -1,4 +1,4 @@
-use thiserror::Error;
+use crate::prelude::*;
 
 pub type FileStorageResult<T> = Result<T, FileStorageError>;
 

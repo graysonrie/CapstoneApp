@@ -1,10 +1,16 @@
-import { Inter, Manrope } from "next/font/google";
+import { Inter, Manrope, Tangerine } from "next/font/google";
 import type { Viewport } from "next";
 import "./globals.css";
 import MobileNavBar from "@/components/mobile-nav-bar";
 import { QueryProvider } from "@/components/QueryProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { cn } from "@/lib/utils";
+
+const tangerine = Tangerine({
+  subsets: ["latin"],
+  variable: "--font-brand",
+  weight: "400",
+});
 
 const manropeHeading = Manrope({
   subsets: ["latin"],
@@ -31,14 +37,19 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("font-sans", inter.variable, manropeHeading.variable)}
+      className={cn(
+        "font-sans",
+        inter.variable,
+        manropeHeading.variable,
+        tangerine.variable,
+      )}
       suppressHydrationWarning
     >
       <body className="antialiased bg-transparent">
         <ThemeProvider>
           <QueryProvider>
             {/* <AdaptiveWindowChrome /> */}
-            <div className="flex min-h-dvh flex-col pt-[env(safe-area-inset-top)] pb-[calc(5rem+env(safe-area-inset-bottom))]">
+            <div className="flex bg-background min-h-dvh flex-col pt-[env(safe-area-inset-top)] pb-[calc(5rem+env(safe-area-inset-bottom))]">
               {children}
             </div>
             <MobileNavBar />

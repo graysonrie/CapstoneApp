@@ -2,13 +2,13 @@ pub mod clients;
 mod error;
 mod util;
 
-pub use clients::{AuthClient, ClockClient, DevClient, TestClient, UserClient};
+pub use clients::{AuthClient, ClockClient, DevClient, UserClient};
 pub use error::{ClientError, ClientResult};
 use reqwest::RequestBuilder;
 use std::sync::RwLock;
 use url::Url;
 
-use crate::error::ClientError::*;
+use crate::{clients::MiscClient, error::ClientError::*};
 
 const DEFAULT_SERVER_ENDPOINT: &str = "http://127.0.0.1:3001";
 
@@ -92,8 +92,8 @@ impl ApiClient {
         Ok(request.bearer_auth(token))
     }
 
-    pub fn test_client(&self) -> TestClient<'_> {
-        TestClient::new(self)
+    pub fn misc_client(&self) -> MiscClient<'_> {
+        MiscClient::new(self)
     }
 
     pub fn auth_client(&self) -> AuthClient<'_> {
