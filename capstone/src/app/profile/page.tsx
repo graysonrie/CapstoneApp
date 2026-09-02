@@ -34,78 +34,79 @@ export default function ProfilePage() {
   const joinedLabel = `Joined ${chronoUtcDateTimeToUserFriendlyFormat(joinedAtDate)}`;
 
   return (
-    <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-8">
+    <>
       <PointGridBg />
+      <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-8 z-10">
+        <header className="flex flex-col items-center gap-3 text-center">
+          <Avatar className="size-24">
+            <AvatarFallback className="bg-primary/20 font-heading text-2xl text-foreground">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h1 className="font-heading text-2xl font-medium">{displayName}</h1>
+            <p className="text-sm text-muted-foreground">{joinedLabel}</p>
+          </div>
+        </header>
 
-      <header className="flex flex-col items-center gap-3 text-center">
-        <Avatar className="size-24">
-          <AvatarFallback className="bg-primary/20 font-heading text-2xl text-foreground">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-        <div>
-          <h1 className="font-heading text-2xl font-medium">{displayName}</h1>
-          <p className="text-sm text-muted-foreground">{joinedLabel}</p>
-        </div>
-      </header>
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <CardDescription>Current rank</CardDescription>
-              <CardTitle className="text-xl">{rank.name}</CardTitle>
+        <Card>
+          <CardHeader>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <CardDescription>Current rank</CardDescription>
+                <CardTitle className="text-xl">{rank.name}</CardTitle>
+              </div>
+              <Badge>Lv. {rank.level}</Badge>
             </div>
-            <Badge>Lv. {rank.level}</Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2">
-          <Progress value={xpPercent} aria-label="XP toward next rank" />
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>
-              {rank.xp.toLocaleString()} / {rank.xpToNext.toLocaleString()} XP
-            </span>
-            <span>Next: {rank.nextRank}</span>
-          </div>
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            <Progress value={xpPercent} aria-label="XP toward next rank" />
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>
+                {rank.xp.toLocaleString()} / {rank.xpToNext.toLocaleString()} XP
+              </span>
+              <span>Next: {rank.nextRank}</span>
+            </div>
+          </CardContent>
+        </Card>
 
-      <div className="grid grid-cols-3 gap-3">
-        <StatTile label="Scans" value={stats.scans} />
-        <StatTile label="Species" value={stats.uniqueSpecies} />
-        <StatTile label="Streak" value={`${stats.streakDays}d`} />
-      </div>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="font-heading text-lg font-medium">Found plants</h2>
-        <div className="grid grid-cols-2 gap-3">
-          {foundPlants.map((plant) => (
-            <Card key={plant.id} size="sm" className="gap-3">
-              <div
-                className={`mx-4 h-20 rounded-2xl ${plant.tileClass}`}
-                aria-hidden
-              />
-              <CardHeader className="gap-1">
-                <CardTitle className="leading-tight">
-                  {plant.commonName}
-                </CardTitle>
-                <CardDescription className="italic">
-                  {plant.scientificName}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex items-center justify-between gap-2">
-                <Badge variant={RARITY_VARIANT[plant.rarity]}>
-                  {plant.rarity}
-                </Badge>
-                <span className="text-xs text-muted-foreground">
-                  {plant.foundAt}
-                </span>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="grid grid-cols-3 gap-3">
+          <StatTile label="Scans" value={stats.scans} />
+          <StatTile label="Species" value={stats.uniqueSpecies} />
+          <StatTile label="Streak" value={`${stats.streakDays}d`} />
         </div>
-      </section>
-    </main>
+
+        <section className="flex flex-col gap-3">
+          <h2 className="font-heading text-lg font-medium">Found plants</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {foundPlants.map((plant) => (
+              <Card key={plant.id} size="sm" className="gap-3">
+                <div
+                  className={`mx-4 h-20 rounded-2xl ${plant.tileClass}`}
+                  aria-hidden
+                />
+                <CardHeader className="gap-1">
+                  <CardTitle className="leading-tight">
+                    {plant.commonName}
+                  </CardTitle>
+                  <CardDescription className="italic">
+                    {plant.scientificName}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex items-center justify-between gap-2">
+                  <Badge variant={RARITY_VARIANT[plant.rarity]}>
+                    {plant.rarity}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    {plant.foundAt}
+                  </span>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      </main>
+    </>
   );
 }
 
