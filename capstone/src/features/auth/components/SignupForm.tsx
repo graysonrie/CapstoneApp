@@ -14,7 +14,11 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { useSignupMutation } from "@/features/auth/hooks/useAuthMutations";
+import { getErrorMessage } from "@/lib/error";
 import { useAuthFormStore } from "../store/useAuthFormStore";
+import AnimatedButton from "@/components/generic/AnimatedButton";
+import { motion } from "motion/react";
+import { TRANSITION1 } from "@/types/motionConstants";
 
 export default function SignupForm() {
   const { name, password, email, setValues } = useAuthFormStore();
@@ -26,9 +30,14 @@ export default function SignupForm() {
   }
 
   return (
-    <div className="">
+    <motion.div
+      className=""
+      initial={{ scale: 0.8 }}
+      animate={{ scale: 1 }}
+      transition={TRANSITION1}
+    >
       <div className="flex w-full justify-center py-8">
-        <p className="font-bold text-xl">Sign up for your account</p>
+        <h1 className=" text-semibold text-7xl font-brand">Welcome</h1>
       </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <FieldGroup className="gap-5">
@@ -97,22 +106,18 @@ export default function SignupForm() {
         </FieldGroup>
 
         {signUpMutation.isError ? (
-          <FieldError>
-            {signUpMutation.error instanceof Error
-              ? signUpMutation.error.message
-              : "Something went wrong"}
-          </FieldError>
+          <FieldError>{getErrorMessage(signUpMutation.error)}</FieldError>
         ) : null}
 
-        <Button
+        <AnimatedButton
           type="submit"
           size="lg"
           className="w-full "
           disabled={signUpMutation.isPending}
         >
           {signUpMutation.isPending ? "Signing up…" : "Sign up"}
-        </Button>
+        </AnimatedButton>
       </form>
-    </div>
+    </motion.div>
   );
 }

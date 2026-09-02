@@ -14,7 +14,11 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { useLoginMutation } from "@/features/auth/hooks/useAuthMutations";
+import { getErrorMessage } from "@/lib/error";
 import { useAuthFormStore } from "../store/useAuthFormStore";
+import { motion } from "motion/react";
+import AnimatedButton from "@/components/generic/AnimatedButton";
+import { TRANSITION1 } from "@/types/motionConstants";
 
 export default function LoginForm() {
   const { name, password, email, setValues } = useAuthFormStore();
@@ -26,9 +30,13 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="">
+    <motion.div
+      initial={{ scale: 0.8 }}
+      animate={{ scale: 1 }}
+      transition={TRANSITION1}
+    >
       <div className="flex w-full justify-center py-8">
-        <h1 className=" text-semibold text-7xl font-brand">Welcome</h1>
+        <h1 className=" text-semibold text-7xl font-brand">Whats up bruh</h1>
       </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <FieldGroup className="gap-5">
@@ -77,22 +85,18 @@ export default function LoginForm() {
         </FieldGroup>
 
         {loginMutation.isError ? (
-          <FieldError>
-            {loginMutation.error instanceof Error
-              ? loginMutation.error.message
-              : "Something went wrong"}
-          </FieldError>
+          <FieldError>{getErrorMessage(loginMutation.error)}</FieldError>
         ) : null}
 
-        <Button
+        <AnimatedButton
           type="submit"
           size="lg"
           className="w-full "
           disabled={loginMutation.isPending}
         >
           {loginMutation.isPending ? "Logging in…" : "Log In"}
-        </Button>
+        </AnimatedButton>
       </form>
-    </div>
+    </motion.div>
   );
 }

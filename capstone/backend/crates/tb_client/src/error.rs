@@ -34,3 +34,54 @@ pub enum ClientError {
     #[error(transparent)]
     Url(#[from] url::ParseError),
 }
+
+impl ClientError {
+    /// Message safe to show in the UI. Uses the backend's HTTP body for
+    /// failed requests and never leaks internal details (reqwest, JSON, locks).
+    pub fn user_message(&self) -> String {
+        match self {
+            Self::RequestFailed { body, .. } => {
+                let body = body.trim();
+                if body.is_empty() {
+                    "Something went wrong".to_string()
+                } else {
+                    body.to_string()
+                }
+            }
+            Self::Http(_) => "Unable to reach the server".to_string(),
+            Self::Url(_) => "Invalid server address".to_string(),
+            Self::AuthTokenNotSet | Self::RefreshTokenNotSet => "You are not signed in".to_string(),
+            Self::MissingEmailVerificationCode => "Email verification is required".to_string(),
+            Self::AuthTokenLockPoisoned
+            | Self::RefreshTokenLockPoisoned
+            | Self::JsonDecode { .. } => "Something went wrong".to_string(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn user_message_uses_http_body() {
+        let err = ClientError::RequestFailed {
+            status: 401,
+            body: "invalid credentials".into(),
+        };
+        assert_eq!(err.user_message(), "invalid credentials");
+        assert_eq!(
+            err.to_string(),
+            "request failed with status 401: invalid credentials"
+        );
+    }
+
+    #[test]
+    fn user_message_falls_back_on_empty_body() {
+        let err = ClientError::RequestFailed {
+            status: 500,
+            body: "  \n".into(),
+        };
+        assert_eq!(err.user_message(), "Something went wrong");
+    }
+}

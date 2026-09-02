@@ -66,7 +66,7 @@ body {
   --card-foreground: oklch(0.153 0.006 107.1);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.153 0.006 107.1);
-  --primary: oklch(86.202% 0.2256 139.182);
+  --primary: oklch(79.809% 0.23263 144.109);
   --primary-foreground: oklch(0.97 0.014 254.604);
   --secondary: oklch(96.919% 0.19928 109.62);
   --secondary-foreground: oklch(0.21 0.006 285.885);
@@ -157,4 +157,34 @@ body {
   background-repeat: repeat;
   background-size: 200px 200px;
   animation: repeating-bg-scroll 5s linear infinite;
+}
+
+@keyframes point-grid-scroll {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 28px 28px;
+  }
+}
+
+.point-grid-bg {
+  background-image: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--foreground) 28%, transparent) 1.15px,
+    transparent 1.16px
+  );
+  background-size: 28px 28px;
+  animation: point-grid-scroll 18s linear infinite;
+  mask-image: radial-gradient(
+    ellipse 85% 70% at 50% 42%,
+    transparent 12%,
+    black 72%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .point-grid-bg {
+    animation: none;
+  }
 }

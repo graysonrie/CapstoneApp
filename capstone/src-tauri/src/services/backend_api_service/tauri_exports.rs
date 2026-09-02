@@ -18,15 +18,15 @@ pub async fn log_in(
         .auth_client()
         .login(&email, &password)
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| e.user_message())?;
 
     inner
         .set_auth_token(response.access_token)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| e.user_message())?;
 
     inner
         .set_refresh_token(response.refresh_token)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| e.user_message())?;
 
     Ok(())
 }
@@ -44,7 +44,7 @@ pub async fn sign_up(
         .auth_client()
         .register_start(&email, &password)
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| e.user_message())?;
 
     // As long as email verification is off, then response should
     // contain the user_id here, indicating success
@@ -106,5 +106,9 @@ pub async fn ping(api: BackendApiState<'_>) -> Result<(), String> {
     // Get inner otherwise RA fails to provide autocomplete
     let inner: &Arc<ApiClient> = api.inner();
 
-    inner.misc_client().ping().await.map_err(|e| e.to_string())
+    inner
+        .misc_client()
+        .ping()
+        .await
+        .map_err(|e| e.user_message())
 }
