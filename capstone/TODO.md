@@ -3,3 +3,4 @@
 - Add motion animations to the other pages
 
 - Ensure the animations show up on mobile
+  (EDIT): yeah they work but ONLY on the prod build of 'pnpm tauri build ios --open' for whatever reason

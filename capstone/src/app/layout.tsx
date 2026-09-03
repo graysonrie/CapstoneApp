@@ -1,10 +1,10 @@
 import { Inter, Manrope, Tangerine } from "next/font/google";
 import type { Viewport } from "next";
 import "./globals.css";
-import MobileNavBar from "@/components/mobile-nav-bar";
 import { QueryProvider } from "@/components/QueryProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { cn } from "@/lib/utils";
+import ScanOnlyMobileNavBar from "@/components/mobile-nav-bar/ScanOnlyMobileNavBar";
 
 const tangerine = Tangerine({
   subsets: ["latin"],
@@ -52,7 +52,7 @@ export default function RootLayout({
             <div className="flex bg-background min-h-dvh flex-col pt-[env(safe-area-inset-top)] pb-[calc(5rem+env(safe-area-inset-bottom))]">
               {children}
             </div>
-            <MobileNavBar />
+            <ScanOnlyMobileNavBar />
           </QueryProvider>
         </ThemeProvider>
       </body>

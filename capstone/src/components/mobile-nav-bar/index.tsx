@@ -18,7 +18,7 @@ export default function MobileNavBar() {
   // const { data: isLoggedIn, isLoading } = useIsValidSession();
   // const { isConfirmedOffline } = useAppStore();
 
-  const isLogin = pathname === "login";
+  const isLogin = pathname === "/login";
 
   if (isLogin) {
     return null;

@@ -1,7 +1,9 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { useHomeStore } from "@/features/home/store/useHomeStore";
 import { useAppStore } from "@/stores/useAppStore";
+import Link from "next/link";
 import { useEffect } from "react";
 
 export default function HomePage() {
@@ -16,5 +18,15 @@ export default function HomePage() {
     setValues({ isFirstVisit: false });
   }, [setValues, isFirstVisit, isConfirmedOffline]);
 
-  return <div>I am HomePage</div>;
+  return (
+    <div>
+      I am HomePage{" "}
+      <Button>
+        <Link href={"/login"}>Login page</Link>
+      </Button>
+      <Button>
+        <Link href={"/profile"}>Profile page</Link>
+      </Button>
+    </div>
+  );
 }

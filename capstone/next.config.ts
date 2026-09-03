@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   // Resolve assets from the LAN/TUN host when developing on a physical device.
   // https://v2.tauri.app/start/frontend/nextjs/
   assetPrefix: isProd ? undefined : `http://${internalHost}:3000`,
+  output: "export",
 };
 
 export default nextConfig;

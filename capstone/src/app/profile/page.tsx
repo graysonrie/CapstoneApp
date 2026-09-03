@@ -1,5 +1,6 @@
 "use client";
 
+import AnimatedButton from "@/components/generic/AnimatedButton";
 import PointGridBg from "@/components/PointGridBg";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,7 @@ import {
   PlantRarity,
 } from "@/features/profile/types/profileTypes";
 import { chronoUtcDateTimeToUserFriendlyFormat } from "@/lib/utils";
+import { HomeIcon } from "lucide-react";
 
 const RARITY_VARIANT: Record<PlantRarity, "outline" | "secondary" | "default"> =
   {
@@ -36,6 +38,18 @@ export default function ProfilePage() {
   return (
     <>
       <PointGridBg />
+      <div className="sticky top-4 left-4 z-20 self-start">
+        <AnimatedButton
+          href="/home"
+          size="icon"
+          variant="glass"
+          className="size-16 rounded-full"
+          aria-label="Home"
+        >
+          <HomeIcon className="size-8" />
+        </AnimatedButton>
+      </div>
+
       <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-8 z-10">
         <header className="flex flex-col items-center gap-3 text-center">
           <Avatar className="size-24">

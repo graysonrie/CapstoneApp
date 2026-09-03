@@ -6,6 +6,12 @@
   user-select: none;
 }
 
+/* Prevent iOS/WKWebView link drag previews (tauri://localhost/...). */
+a {
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}
+
 /* Allow pan/scroll but block double-tap zoom. */
 html,
 body {
@@ -68,7 +74,7 @@ body {
   --popover-foreground: oklch(0.153 0.006 107.1);
   --primary: oklch(79.809% 0.23263 144.109);
   --primary-foreground: oklch(0.97 0.014 254.604);
-  --secondary: oklch(96.919% 0.19928 109.62);
+  --secondary: oklch(86.4% 0.1472 106.12);
   --secondary-foreground: oklch(0.21 0.006 285.885);
   --muted: oklch(0.966 0.005 106.5);
   --muted-foreground: oklch(73.022% 0.10568 99.269);
@@ -175,7 +181,7 @@ body {
     transparent 1.16px
   );
   background-size: 28px 28px;
-  animation: point-grid-scroll 18s linear infinite;
+  animation: point-grid-scroll 4s linear infinite;
   mask-image: radial-gradient(
     ellipse 85% 70% at 50% 42%,
     transparent 12%,
