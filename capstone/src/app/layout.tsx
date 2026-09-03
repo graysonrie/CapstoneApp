@@ -49,7 +49,7 @@ export default function RootLayout({
         <ThemeProvider>
           <QueryProvider>
             {/* <AdaptiveWindowChrome /> */}
-            <div className="flex bg-background min-h-dvh flex-col pt-[env(safe-area-inset-top)] pb-[calc(5rem+env(safe-area-inset-bottom))]">
+            <div className="flex overflow-x-hidden bg-background min-h-dvh flex-col pt-[env(safe-area-inset-top)] pb-[calc(5rem+env(safe-area-inset-bottom))]">
               {children}
             </div>
             <ScanOnlyMobileNavBar />

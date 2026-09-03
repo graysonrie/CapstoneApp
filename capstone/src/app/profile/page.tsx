@@ -17,7 +17,9 @@ import {
   PlantRarity,
 } from "@/features/profile/types/profileTypes";
 import { chronoUtcDateTimeToUserFriendlyFormat } from "@/lib/utils";
+import { TRANSITION1 } from "@/types/motionConstants";
 import { HomeIcon } from "lucide-react";
+import { motion } from "motion/react";
 
 const RARITY_VARIANT: Record<PlantRarity, "outline" | "secondary" | "default"> =
   {
@@ -42,7 +44,7 @@ export default function ProfilePage() {
         <AnimatedButton
           href="/home"
           size="icon"
-          variant="glass"
+          variant="defaultGlass"
           className="size-16 rounded-full"
           aria-label="Home"
         >
@@ -50,7 +52,12 @@ export default function ProfilePage() {
         </AnimatedButton>
       </div>
 
-      <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-8 z-10">
+      <motion.div
+        className="relative mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-8 z-10"
+        initial={{ scale: 0.8 }}
+        animate={{ scale: 1 }}
+        transition={TRANSITION1}
+      >
         <header className="flex flex-col items-center gap-3 text-center">
           <Avatar className="size-24">
             <AvatarFallback className="bg-primary/20 font-heading text-2xl text-foreground">
@@ -119,7 +126,7 @@ export default function ProfilePage() {
             ))}
           </div>
         </section>
-      </main>
+      </motion.div>
     </>
   );
 }

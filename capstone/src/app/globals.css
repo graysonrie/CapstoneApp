@@ -177,11 +177,11 @@ body {
 .point-grid-bg {
   background-image: radial-gradient(
     circle,
-    color-mix(in oklch, var(--foreground) 28%, transparent) 1.15px,
+    color-mix(in oklch, var(--foreground) 28%, transparent) 1.4px,
     transparent 1.16px
   );
   background-size: 28px 28px;
-  animation: point-grid-scroll 4s linear infinite;
+  animation: point-grid-scroll 2s linear infinite;
   mask-image: radial-gradient(
     ellipse 85% 70% at 50% 42%,
     transparent 12%,

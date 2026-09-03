@@ -1,7 +1,6 @@
 "use client";
 
-import { Lock, Mail, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Lock, Mail } from "lucide-react";
 import {
   Field,
   FieldError,
@@ -21,7 +20,7 @@ import AnimatedButton from "@/components/generic/AnimatedButton";
 import { TRANSITION1 } from "@/types/motionConstants";
 
 export default function LoginForm() {
-  const { name, password, email, setValues } = useAuthFormStore();
+  const { password, email, setValues } = useAuthFormStore();
   const loginMutation = useLoginMutation();
 
   function handleSubmit(event: React.ChangeEvent<HTMLFormElement>) {

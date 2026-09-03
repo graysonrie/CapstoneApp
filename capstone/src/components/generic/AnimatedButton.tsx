@@ -19,6 +19,8 @@ const buttonVariants = cva(
         glass:
           "backdrop-blur-sm bg-primary/80 border-2 border-primary to-primary text-primary-foreground hover:bg-secondary/60 hover:border-secondary/80",
 
+        defaultGlass:
+          "backdrop-blur-sm bg-background/30 border-2 border-background to-background text-foreground",
         outline:
           "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:bg-transparent dark:hover:bg-input/30",
         secondary:
@@ -53,7 +55,10 @@ type AnimatedButtonBase = VariantProps<typeof buttonVariants> & {
 };
 
 type AnimatedButtonAsButton = AnimatedButtonBase &
-  Omit<React.ComponentProps<typeof motion.button>, keyof AnimatedButtonBase | "href"> & {
+  Omit<
+    React.ComponentProps<typeof motion.button>,
+    keyof AnimatedButtonBase | "href"
+  > & {
     href?: undefined;
   };
 
