@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Camera, Home, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useIsValidSession } from "@/features/auth/hooks/useIsValidSession";
-import { useAppStore } from "@/stores/useAppStore";
+// import { useIsValidSession } from "@/features/auth/hooks/useIsValidSession";
+// import { useAppStore } from "@/stores/useAppStore";
 
 const NAV_ITEMS = [
   { href: "/home", label: "Home", icon: Home },
@@ -15,10 +15,12 @@ const NAV_ITEMS = [
 
 export default function MobileNavBar() {
   const pathname = usePathname();
-  const { data: isLoggedIn, isLoading } = useIsValidSession();
-  const { isConfirmedOffline } = useAppStore();
+  // const { data: isLoggedIn, isLoading } = useIsValidSession();
+  // const { isConfirmedOffline } = useAppStore();
 
-  if (!isConfirmedOffline && (isLoading || !isLoggedIn)) {
+  const isLogin = pathname === "login";
+
+  if (isLogin) {
     return null;
   }
 
