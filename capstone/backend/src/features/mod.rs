@@ -5,3 +5,4 @@ pub mod dev;
 pub mod email_server;
 pub mod file_storage;
 pub mod user;
+pub mod plant_scan;
