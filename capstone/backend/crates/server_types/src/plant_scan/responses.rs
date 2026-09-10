@@ -15,6 +15,19 @@ pub struct Identification {
     scientific_name: Option<String>,
     family: Option<String>,
     confidence: Confidence,
+    /// Assuming that the identification is mostly correct, how rare the plant is.
+    ///
+    /// A null rarity implies that the model could not accurately discern the plant.
+    rarity: Option<Rarity>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub enum Rarity {
+    Common,
+    Uncommon,
+    Rare,
+    SuperRare,
+    Exotic,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

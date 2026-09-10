@@ -1,4 +1,4 @@
-use crate::features::db::models::user::{self, ActiveModel, Column, Entity};
+use crate::features::db::models::user::{self, ActiveModel, Column, Entity, UserIdVec};
 use crate::prelude::*;
 
 pub async fn find_by_email(
@@ -44,6 +44,13 @@ pub async fn create_pending_user(
         role: Set(role),
         username: Set(None),
         last_login_at: Set(None),
+
+        level: Set(1),
+        xp: Set(0),
+        max_xp: Set(user::max_xp_needed_for_level(1)),
+        rank_title: Set(user::rank_title_for_level(1).to_owned()),
+        friend_user_ids: Set(user::UserIdVec::default()),
+        pending_friend_user_ids: Set(user::UserIdVec::default()),
     }
     .insert(db)
     .await

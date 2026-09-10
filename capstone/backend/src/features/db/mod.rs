@@ -16,6 +16,12 @@ async fn ensure_email_verification_table(
     ensure_table(db, models::email_verification::Entity).await
 }
 
+async fn ensure_user_plant_finds_table(
+    db: &sea_orm::DatabaseConnection,
+) -> Result<(), sea_orm::DbErr> {
+    ensure_table(db, models::user_plant_finds::Entity).await
+}
+
 /// Creates the table from the given entity if the table does not exist
 async fn ensure_table(
     db: &sea_orm::DatabaseConnection,
@@ -33,6 +39,7 @@ async fn ensure_table(
 async fn ensure_tables(db: &sea_orm::DatabaseConnection) -> Result<(), sea_orm::DbErr> {
     ensure_user_table(db).await?;
     ensure_email_verification_table(db).await?;
+    ensure_user_plant_finds_table(db).await?;
     Ok(())
 }
 
@@ -74,11 +81,15 @@ pub async fn erase_and_recreate_all_tables(db: &DatabaseConnection) -> Result<()
         return Err(DbErr::Custom("Can't do that".to_string()));
     }
 
-    let _ = crate::features::db::models::user::Entity::delete_many()
+    let _ = crate::features::db::models::user_plant_finds::Entity::delete_many()
         .exec(db)
         .await?;
 
     let _ = crate::features::db::models::email_verification::Entity::delete_many()
+        .exec(db)
+        .await?;
+
+    let _ = crate::features::db::models::user::Entity::delete_many()
         .exec(db)
         .await?;
 
