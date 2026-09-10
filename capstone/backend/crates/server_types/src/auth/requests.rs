@@ -27,3 +27,15 @@ pub struct ResendVerificationEmailRequest {
 pub struct RefreshTokenRequest {
     pub refresh_token: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ForgotPasswordRequest {
+    pub email: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ResetPasswordRequest {
+    pub email: String,
+    pub code: String,
+    pub new_password: String,
+}

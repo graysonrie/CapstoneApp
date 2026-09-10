@@ -12,3 +12,10 @@ pub struct ChangeRoleRequest {
     pub email: String,
     pub role: RoleType,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CompleteProfileRequest {
+    pub first_name: String,
+    pub last_name: String,
+    pub usage_intent: String,
+}

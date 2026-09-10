@@ -1,11 +1,13 @@
-use chrono::Duration;
-
-use super::{password, repo, tokens};
+use super::{password, password_reset_repo, repo, tokens};
 use crate::features::{
     db::models::user,
     email_server::{self, service::EmailVerificationError},
 };
 use crate::prelude::*;
+use chrono::Duration;
+use rand::RngExt;
+use rand::rand_core::UnwrapErr;
+use rand::rngs::SysRng;
 
 #[derive(Clone, Debug)]
 pub struct AccessTokenIssueSettings {
@@ -44,6 +46,7 @@ pub enum AuthError {
     EmailNotVerified,
     EmailAlreadyVerified,
     InvalidVerificationCode,
+    InvalidPasswordResetCode,
 }
 
 impl From<DbErr> for AuthError {
@@ -365,4 +368,93 @@ fn login_response(user: user::Model, tokens: AuthTokenPair) -> LoginResponse {
         user_id: user.id,
         email: user.email,
     }
+}
+
+fn generate_reset_code() -> String {
+    let mut rng = UnwrapErr(SysRng);
+    format!("{:06}", rng.random_range(0..1_000_000))
+}
+
+/// Anti-enumeration: returns Ok with a code only when a matching account exists.
+/// Callers should always return a generic success message to the client.
+pub async fn prepare_password_reset(
+    db: &sea_orm::DatabaseConnection,
+    clock: &impl Clock,
+    body: ForgotPasswordRequest,
+) -> Result<Option<String>, AuthError> {
+    let email = body.email.trim();
+    if !valid_email(email) {
+        return Ok(None);
+    }
+
+    let Some(user) = repo::find_by_email(db, email).await? else {
+        return Ok(None);
+    };
+
+    let code = generate_reset_code();
+    let now_utc = clock.now_utc();
+    let now = now_utc.fixed_offset();
+    let expires_at = (now_utc + chrono::Duration::minutes(15)).fixed_offset();
+
+    password_reset_repo::delete_expired(db, now).await?;
+    password_reset_repo::delete_by_user_id(db, user.id).await?;
+    password_reset_repo::create_reset(db, user.id, &code, now, expires_at).await?;
+
+    Ok(Some(code))
+}
+
+pub async fn reset_password(
+    db: &sea_orm::DatabaseConnection,
+    clock: &impl Clock,
+    body: ResetPasswordRequest,
+) -> Result<ResetPasswordResponse, AuthError> {
+    let email = body.email.trim();
+    if !valid_email(email) {
+        return Err(AuthError::InvalidEmail);
+    }
+    if body.new_password.len() < 8 {
+        return Err(AuthError::WeakPassword);
+    }
+
+    let Some(user) = repo::find_by_email(db, email).await? else {
+        return Err(AuthError::InvalidPasswordResetCode);
+    };
+    let user_id = user.id;
+
+    let now = clock.now_db();
+    password_reset_repo::delete_expired(db, now).await?;
+
+    let Some(reset) = password_reset_repo::find_by_user_id(db, user_id).await? else {
+        return Err(AuthError::InvalidPasswordResetCode);
+    };
+
+    if reset.expires_at <= now {
+        password_reset_repo::delete_by_user_id(db, user_id).await?;
+        return Err(AuthError::InvalidPasswordResetCode);
+    }
+
+    const MAX_ATTEMPTS: u32 = 5;
+    if !bcrypt::verify(body.code.trim(), &reset.code_hash)? {
+        let updated =
+            password_reset_repo::increment_attempts(db, reset.id, reset.attempts).await?;
+        if updated.attempts >= MAX_ATTEMPTS {
+            password_reset_repo::delete_by_user_id(db, user_id).await?;
+        }
+        return Err(AuthError::InvalidPasswordResetCode);
+    }
+
+    let salt = password::generate_salt();
+    let hash = password::hash_password(&body.new_password, &salt)?;
+
+    let mut active: user::ActiveModel = user.into();
+    active.password_hash = Set(hash);
+    active.salt = Set(salt);
+    active.refresh_token_hash = Set(None);
+    active.update(db).await?;
+
+    password_reset_repo::delete_by_user_id(db, user_id).await?;
+
+    Ok(ResetPasswordResponse {
+        message: "Password has been reset. You can log in with your new password.".to_string(),
+    })
 }

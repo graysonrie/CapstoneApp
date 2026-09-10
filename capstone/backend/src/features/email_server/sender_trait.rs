@@ -13,6 +13,7 @@ pub enum EmailSenderError {
 #[async_trait]
 pub trait EmailSender {
     async fn send_verification_code(&self, to: &str, code: &str) -> EmailSenderResult<()>;
+    async fn send_password_reset_code(&self, to: &str, code: &str) -> EmailSenderResult<()>;
 }
 
 pub struct MockEmailSender;
@@ -20,7 +21,13 @@ pub struct MockEmailSender;
 #[async_trait]
 impl EmailSender for MockEmailSender {
     async fn send_verification_code(&self, to: &str, code: &str) -> EmailSenderResult<()> {
-        tracing::warn!("sent code {code} to {to} (not really)");
+        tracing::warn!("sent verification code {code} to {to} (not really)");
+
+        Ok(())
+    }
+
+    async fn send_password_reset_code(&self, to: &str, code: &str) -> EmailSenderResult<()> {
+        tracing::warn!("sent password reset code {code} to {to} (not really)");
 
         Ok(())
     }

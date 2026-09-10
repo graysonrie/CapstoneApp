@@ -16,6 +16,7 @@ pub enum AuthRateBucket {
     LoginRegister,
     Refresh,
     EmailVerify,
+    PasswordReset,
 }
 
 impl AuthRateBucket {
@@ -24,6 +25,7 @@ impl AuthRateBucket {
             Self::LoginRegister => "login_register",
             Self::Refresh => "refresh",
             Self::EmailVerify => "email_verify",
+            Self::PasswordReset => "password_reset",
         }
     }
 
@@ -32,6 +34,7 @@ impl AuthRateBucket {
             Self::LoginRegister => 10,
             Self::Refresh => 20,
             Self::EmailVerify => 5,
+            Self::PasswordReset => 5,
         }
     }
 
@@ -41,6 +44,7 @@ impl AuthRateBucket {
             "/auth/login" | "/auth/register/start" => Some(Self::LoginRegister),
             "/auth/refresh" => Some(Self::Refresh),
             "/auth/email/verify" | "/auth/email/resend" => Some(Self::EmailVerify),
+            "/auth/password/forgot" | "/auth/password/reset" => Some(Self::PasswordReset),
             _ => None,
         }
     }

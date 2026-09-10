@@ -1,7 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import AnimatedButton from "@/components/generic/AnimatedButton";
 import PointGridBg from "@/components/PointGridBg";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,6 +23,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { useLogoutMutation } from "@/features/auth/hooks/useAuthMutations";
 import {
   FAKE_PROFILE,
   PlantRarity,
@@ -32,6 +44,8 @@ export default function ProfilePage() {
   const { firstName, lastName, joinedAtDate, rank, stats, foundPlants } =
     FAKE_PROFILE;
   const xpPercent = Math.round((rank.xp / rank.xpToNext) * 100);
+  const logoutMutation = useLogoutMutation();
+  const [signOutOpen, setSignOutOpen] = useState(false);
 
   const initials = `${firstName[0]}${lastName[0]}`.toUpperCase();
   const displayName = `${firstName} ${lastName}`;
@@ -126,6 +140,37 @@ export default function ProfilePage() {
             ))}
           </div>
         </section>
+
+        <AnimatedButton
+          type="button"
+          size="lg"
+          variant="destructive"
+          className="mt-4 w-full"
+          disabled={logoutMutation.isPending}
+          onClick={() => setSignOutOpen(true)}
+        >
+          {logoutMutation.isPending ? "Signing out…" : "Sign out"}
+        </AnimatedButton>
+
+        <AlertDialog open={signOutOpen} onOpenChange={setSignOutOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                You will be signed out and returned to the login screen.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                variant="destructive"
+                onClick={() => logoutMutation.mutate()}
+              >
+                Sign out
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </motion.div>
     </>
   );

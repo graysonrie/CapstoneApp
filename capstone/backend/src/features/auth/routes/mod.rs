@@ -25,7 +25,9 @@ pub fn auth_router(config: &AppConfig, state: AppState) -> Router<AppState> {
         .route("/auth/register/start", post(register_start))
         .route("/auth/login", post(login))
         .route("/auth/refresh", post(refresh))
-        .route("/auth/logout", post(logout));
+        .route("/auth/logout", post(logout))
+        .route("/auth/password/forgot", post(forgot_password))
+        .route("/auth/password/reset", post(reset_password));
 
     let public_auth_routes = if config.auth.require_email_verification {
         tracing::info!(
@@ -58,7 +60,9 @@ async fn session(
 
     Ok(Json(SessionResponse {
         user_id: user.id,
+        profile_complete: user::service::is_profile_complete(&user),
         email: user.email,
+        first_name: user.first_name,
     }))
 }
 
@@ -205,4 +209,49 @@ async fn resend_verification_email(
             .to_string(),
         email_verification_code,
     }))
+}
+
+async fn forgot_password(
+    State(state): State<AppState>,
+    Json(body): Json<ForgotPasswordRequest>,
+) -> Result<Json<ForgotPasswordResponse>, AuthHttpError> {
+    let email = body.email.trim().to_string();
+    let code = service::prepare_password_reset(&state.db, &*state.clock, body)
+        .await
+        .map_err(AuthHttpError::from)?;
+
+    if let Some(ref code) = code {
+        state
+            .email_sender
+            .send_password_reset_code(&email, code)
+            .await
+            .map_err(|_| {
+                AuthHttpError((
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "something happened trying to send password reset email".to_string(),
+                ))
+            })?;
+    }
+
+    let password_reset_code = if environment::is_dev() {
+        code
+    } else {
+        None
+    };
+
+    Ok(Json(ForgotPasswordResponse {
+        message: "If an account exists for that email, a password reset code has been sent."
+            .to_string(),
+        password_reset_code,
+    }))
+}
+
+async fn reset_password(
+    State(state): State<AppState>,
+    Json(body): Json<ResetPasswordRequest>,
+) -> Result<Json<ResetPasswordResponse>, AuthHttpError> {
+    service::reset_password(&state.db, &*state.clock, body)
+        .await
+        .map(Json)
+        .map_err(AuthHttpError::from)
 }

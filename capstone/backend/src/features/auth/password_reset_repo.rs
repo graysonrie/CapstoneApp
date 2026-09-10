@@ -1,0 +1,67 @@
+use crate::features::db::models::password_reset::{self, ActiveModel, Column, Entity};
+use crate::prelude::*;
+
+pub async fn create_reset(
+    db: &impl ConnectionTrait,
+    user_id: UserIdType,
+    plain_text_code: &str,
+    created_at: DateTimeWithTimeZone,
+    expires_at: DateTimeWithTimeZone,
+) -> Result<password_reset::Model, DbErr> {
+    let code_hash = bcrypt::hash(plain_text_code, bcrypt::DEFAULT_COST)
+        .map_err(|err| DbErr::Custom(err.to_string()))?;
+    ActiveModel {
+        id: NotSet,
+        user_id: Set(user_id),
+        code_hash: Set(code_hash),
+        expires_at: Set(expires_at),
+        created_at: Set(created_at),
+        attempts: Set(0),
+    }
+    .insert(db)
+    .await
+}
+
+pub async fn find_by_user_id(
+    db: &impl ConnectionTrait,
+    user_id: UserIdType,
+) -> Result<Option<password_reset::Model>, DbErr> {
+    Entity::find()
+        .filter(Column::UserId.eq(user_id))
+        .one(db)
+        .await
+}
+
+pub async fn delete_by_user_id(
+    db: &impl ConnectionTrait,
+    user_id: UserIdType,
+) -> Result<DeleteResult, DbErr> {
+    Entity::delete_many()
+        .filter(Column::UserId.eq(user_id))
+        .exec(db)
+        .await
+}
+
+pub async fn delete_expired(
+    db: &impl ConnectionTrait,
+    now: DateTimeWithTimeZone,
+) -> Result<DeleteResult, DbErr> {
+    Entity::delete_many()
+        .filter(Column::ExpiresAt.lt(now))
+        .exec(db)
+        .await
+}
+
+pub async fn increment_attempts(
+    db: &impl ConnectionTrait,
+    id: i32,
+    current_attempts: u32,
+) -> Result<password_reset::Model, DbErr> {
+    let Some(model) = Entity::find_by_id(id).one(db).await? else {
+        return Err(DbErr::Custom("password reset not found".to_string()));
+    };
+
+    let mut active: ActiveModel = model.into();
+    active.attempts = Set(current_attempts.saturating_add(1));
+    active.update(db).await
+}

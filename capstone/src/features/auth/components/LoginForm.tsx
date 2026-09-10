@@ -33,9 +33,12 @@ export default function LoginForm() {
       initial={{ scale: 0.8 }}
       animate={{ scale: 1 }}
       transition={TRANSITION1}
+      className="pt-4"
     >
       <div className="flex w-full justify-center py-8">
-        <h1 className=" text-semibold text-7xl font-brand">Whats up bruh</h1>
+        <h1 className=" text-semibold text-6xl font-brand">
+          Let&apos;s get you back in
+        </h1>
       </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <FieldGroup className="gap-5">

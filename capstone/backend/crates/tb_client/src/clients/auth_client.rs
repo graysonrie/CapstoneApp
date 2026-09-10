@@ -140,6 +140,42 @@ impl<'a> AuthClient<'a> {
         parse_json_response(response).await
     }
 
+    pub async fn forgot_password(
+        &self,
+        email: &str,
+    ) -> ClientResult<ForgotPasswordResponse> {
+        let response = self
+            .api
+            .http
+            .post(self.api.base_url.join("/auth/password/forgot")?.to_string())
+            .json(&ForgotPasswordRequest {
+                email: email.to_string(),
+            })
+            .send()
+            .await?;
+        parse_json_response(response).await
+    }
+
+    pub async fn reset_password(
+        &self,
+        email: &str,
+        code: &str,
+        new_password: &str,
+    ) -> ClientResult<ResetPasswordResponse> {
+        let response = self
+            .api
+            .http
+            .post(self.api.base_url.join("/auth/password/reset")?.to_string())
+            .json(&ResetPasswordRequest {
+                email: email.to_string(),
+                code: code.to_string(),
+                new_password: new_password.to_string(),
+            })
+            .send()
+            .await?;
+        parse_json_response(response).await
+    }
+
     #[cfg(feature = "dev")]
     /// Only works if the server is running in a dev environment
     pub async fn login_bypass(

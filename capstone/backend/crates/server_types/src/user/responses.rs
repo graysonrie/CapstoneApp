@@ -9,3 +9,8 @@ pub struct UserResponse {
 pub struct ChangeRoleResponse {
     pub success: bool,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CompleteProfileResponse {
+    pub success: bool,
+}

@@ -11,7 +11,10 @@ export default function ScanOnlyMobileNavBar() {
   // const { data: isLoggedIn, isLoading } = useIsValidSession();
   // const { isConfirmedOffline } = useAppStore();
 
-  const isLogin = pathname === "/login";
+  const isLogin =
+    pathname === "/login" ||
+    pathname === "/reset-password" ||
+    pathname == "/setup";
 
   if (isLogin) {
     return null;

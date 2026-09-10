@@ -1,7 +1,6 @@
 "use client";
 
-import { Lock, Mail, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Lock, Mail } from "lucide-react";
 import {
   Field,
   FieldError,
@@ -21,7 +20,7 @@ import { motion } from "motion/react";
 import { TRANSITION1 } from "@/types/motionConstants";
 
 export default function SignupForm() {
-  const { name, password, email, setValues } = useAuthFormStore();
+  const { password, email, setValues } = useAuthFormStore();
   const signUpMutation = useSignupMutation();
 
   function handleSubmit(event: React.ChangeEvent<HTMLFormElement>) {
@@ -37,32 +36,12 @@ export default function SignupForm() {
       transition={TRANSITION1}
     >
       <div className="flex w-full justify-center py-8">
-        <h1 className=" text-semibold text-7xl font-brand">Welcome</h1>
+        <h1 className=" text-semibold text-6xl font-brand text-center">Welcome to PlantApp!</h1>
       </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <FieldGroup className="gap-5">
           <Field>
-            <FieldLabel htmlFor="login-name" className="text-md">
-              Name
-            </FieldLabel>
-            <InputGroup className="h-15">
-              <InputGroupAddon>
-                <User aria-hidden className="size-5" />
-              </InputGroupAddon>
-              <InputGroupInput
-                id="login-name"
-                type="name"
-                autoComplete="name"
-                placeholder="Richter Belmont"
-                value={name}
-                onChange={(event) => setValues({ name: event.target.value })}
-                required
-                className="text-lg"
-              />
-            </InputGroup>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="login-email" className="text-md">
+            <FieldLabel htmlFor="signup-email" className="text-md">
               Email
             </FieldLabel>
             <InputGroup className="h-15">
@@ -70,7 +49,7 @@ export default function SignupForm() {
                 <Mail aria-hidden className="size-5" />
               </InputGroupAddon>
               <InputGroupInput
-                id="login-email"
+                id="signup-email"
                 type="email"
                 autoComplete="email"
                 placeholder="your_email@example.com"
@@ -82,7 +61,7 @@ export default function SignupForm() {
             </InputGroup>
           </Field>
           <Field>
-            <FieldLabel htmlFor="login-password" className="text-md">
+            <FieldLabel htmlFor="signup-password" className="text-md">
               Password
             </FieldLabel>
             <InputGroup className="h-15">
@@ -90,9 +69,9 @@ export default function SignupForm() {
                 <Lock aria-hidden className="size-5" />
               </InputGroupAddon>
               <InputGroupInput
-                id="login-password"
+                id="signup-password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete="new-password"
                 placeholder="Minimum 8 characters"
                 value={password}
                 onChange={(event) =>

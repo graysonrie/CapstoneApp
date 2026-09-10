@@ -29,6 +29,10 @@ impl From<AuthError> for AuthHttpError {
                 StatusCode::BAD_REQUEST,
                 "invalid or expired verification code",
             ),
+            AuthError::InvalidPasswordResetCode => (
+                StatusCode::BAD_REQUEST,
+                "invalid or expired password reset code",
+            ),
         };
         Self((status, msg.into()))
     }

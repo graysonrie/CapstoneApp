@@ -1,5 +1,6 @@
 pub mod middleware;
 mod password;
+mod password_reset_repo;
 mod repo;
 pub mod routes;
 mod service;

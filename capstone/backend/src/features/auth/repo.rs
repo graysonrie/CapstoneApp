@@ -1,4 +1,4 @@
-use crate::features::db::models::user::{self, ActiveModel, Column, Entity, UserIdVec};
+use crate::features::db::models::user::{self, ActiveModel, Column, Entity};
 use crate::prelude::*;
 
 pub async fn find_by_email(
@@ -43,6 +43,9 @@ pub async fn create_pending_user(
         email_verified: Set(false),
         role: Set(role),
         username: Set(None),
+        first_name: Set(None),
+        last_name: Set(None),
+        usage_intent: Set(None),
         last_login_at: Set(None),
 
         level: Set(1),

@@ -34,6 +34,10 @@ pub struct Model {
     pub refresh_token_hash: Option<String>,
 
     pub username: Option<String>,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+    /// How the user plans to use the app (set during onboarding).
+    pub usage_intent: Option<String>,
     pub last_login_at: Option<DateTimeWithTimeZone>,
 
     // App-specific fields:

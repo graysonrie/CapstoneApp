@@ -1,4 +1,4 @@
-use crate::{ApiClient, ClientResult, util::parse_empty_response};
+use crate::{ApiClient, ClientResult, util::parse_empty_response, util::parse_json_response};
 
 use server_types::{prelude::*, user::RoleType};
 
@@ -24,6 +24,29 @@ impl<'a> UserClient<'a> {
             .send()
             .await?;
         parse_empty_response(response).await
+    }
+
+    pub async fn complete_profile(
+        &self,
+        first_name: &str,
+        last_name: &str,
+        usage_intent: &str,
+    ) -> ClientResult<CompleteProfileResponse> {
+        let request = self
+            .api
+            .http
+            .post(self.api.base_url.join("/user/profile/complete")?.to_string());
+        let response = self
+            .api
+            .authenticated_request(request)?
+            .json(&CompleteProfileRequest {
+                first_name: first_name.to_string(),
+                last_name: last_name.to_string(),
+                usage_intent: usage_intent.to_string(),
+            })
+            .send()
+            .await?;
+        parse_json_response(response).await
     }
 
     #[cfg(feature = "dev")]
