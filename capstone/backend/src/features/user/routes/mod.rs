@@ -9,6 +9,7 @@ use crate::prelude::*;
 pub fn user_router(state: AppState) -> Router<AppState> {
     let authenticated_routes = Router::new()
         .route("/user/profile/complete", post(complete_profile))
+        .route("/user/me", get(me))
         .route_layer(axum::middleware::from_fn_with_state(
             state.clone(),
             require_auth,
@@ -45,4 +46,19 @@ async fn complete_profile(
         .await
         .map(Json)
         .map_err(UserHttpError::from)
+}
+
+async fn me(
+    user: AuthenticatedUser,
+    State(state): State<AppState>,
+) -> Result<Json<ProfileResponse>, crate::features::plant_scan::errors::PlantScanHttpError> {
+    crate::features::plant_scan::service::get_profile(
+        &state.db,
+        state.file_storage.as_ref(),
+        &*state.clock,
+        user.user_id,
+    )
+    .await
+    .map(Json)
+    .map_err(crate::features::plant_scan::errors::PlantScanHttpError::from)
 }

@@ -6,6 +6,15 @@ pub struct AppConfig {
     pub auth: AuthConfig,
     pub db: DbConfig,
     pub file_storage: FileStorageConfig,
+    #[serde(default)]
+    pub openai: OpenAiConfig,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, Default)]
+pub struct OpenAiConfig {
+    pub api_key: Option<String>,
+    /// Defaults to gpt-4o when unset.
+    pub model: Option<String>,
 }
 #[derive(Clone, Debug, Deserialize, Serialize, Default)]
 pub struct AuthConfig {

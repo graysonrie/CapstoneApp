@@ -8,3 +8,4 @@ pub use crate::email_sender::requests::*;
 pub use crate::email_sender::responses::*;
 pub use crate::user::requests::*;
 pub use crate::user::responses::*;
+pub use crate::plant_scan::responses::*;

@@ -32,6 +32,18 @@ impl From<RarityType> for Rarity {
     }
 }
 
+impl From<Rarity> for RarityType {
+    fn from(rarity: Rarity) -> Self {
+        match rarity {
+            Rarity::Common => RarityType::Common,
+            Rarity::Uncommon => RarityType::Uncommon,
+            Rarity::Rare => RarityType::Rare,
+            Rarity::SuperRare => RarityType::SuperRare,
+            Rarity::Exotic => RarityType::Exotic,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
 #[sea_orm(table_name = "user_plant_finds")]
 pub struct Model {
@@ -42,10 +54,13 @@ pub struct Model {
 
     pub name: String,
     pub scientific_name: String,
-    pub rarity: Rarity,
+    pub rarity: Option<Rarity>,
 
     /// Calendar date the plant was found (format as e.g. "July 24" in the UI).
     pub found_on: Date,
+
+    /// Relative path in file storage, e.g. `scans/{user_id}/{uuid}.jpg`
+    pub image_path: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

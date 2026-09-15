@@ -1,4 +1,7 @@
-use features::{auth::auth_router, clock::routes::clock_router, user::routes::user_router};
+use features::{
+    auth::auth_router, clock::routes::clock_router, plant_scan::plant_scan_router,
+    user::routes::user_router,
+};
 use std::net::SocketAddr;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -94,6 +97,7 @@ pub fn app_router(state: AppState, config: &AppConfig) -> Router {
         .merge(auth_router(config, state.clone()))
         .merge(clock_router())
         .merge(user_router(state.clone()))
+        .merge(plant_scan_router(state.clone()))
         .merge(dev_router())
         .with_state(state)
 }

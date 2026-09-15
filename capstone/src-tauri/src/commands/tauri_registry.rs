@@ -10,6 +10,9 @@ pub fn invoke_handler() -> impl Fn(tauri::ipc::Invoke) -> bool + Send + Sync + '
         log_out,
         ping,
         request_password_reset,
-        confirm_password_reset
+        confirm_password_reset,
+        scan_plant,
+        get_home,
+        get_profile
     ]
 }

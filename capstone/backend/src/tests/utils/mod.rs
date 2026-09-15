@@ -40,6 +40,7 @@ pub fn default_app_config() -> AppConfig {
             use_local_file_storage: true,
             local_file_storage_directory_path: Some("../TEST_LOCAL_SERVER".to_string()),
         },
+        openai: crate::app_config::OpenAiConfig::default(),
     }
 }
 

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { Check, User, WifiOff } from "lucide-react";
 import { motion } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 
 import AnimatedButton from "@/components/generic/AnimatedButton";
 import PointGridBg from "@/components/PointGridBg";
@@ -17,28 +18,32 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useHomeStore } from "@/features/home/store/useHomeStore";
-import {
-  FAKE_HOME,
-  type DailyPlantQuest,
-} from "@/features/home/types/homeTypes";
-import type { PlantRarity } from "@/features/profile/types/profileTypes";
+import type { DailyPlantQuest, PlantRarity } from "@/features/plant_scan/types";
 import { useAppStore } from "@/stores/useAppStore";
 import { TRANSITION1 } from "@/types/motionConstants";
+import { getHome } from "@/generated";
 
 const RARITY_VARIANT: Record<PlantRarity, "outline" | "secondary" | "default"> =
   {
     Common: "outline",
     Uncommon: "secondary",
     Rare: "default",
+    SuperRare: "default",
+    Exotic: "default",
   };
 
 export default function HomePage() {
   const { isFirstVisit, showOfflineNotice, setValues } = useHomeStore();
   const { isConfirmedOffline } = useAppStore();
+  const homeQuery = useQuery({
+    queryKey: ["home"],
+    queryFn: getHome,
+  });
 
-  const { firstName, quests } = FAKE_HOME;
+  const firstName = homeQuery.data?.first_name ?? "";
+  const quests = homeQuery.data?.quests ?? [];
   const foundCount = quests.filter((q) => q.found).length;
-  const totalCount = quests.length;
+  const totalCount = quests.length || 3;
   const progressPercent = Math.round((foundCount / totalCount) * 100);
 
   useEffect(() => {
@@ -72,9 +77,8 @@ export default function HomePage() {
         transition={TRANSITION1}
       >
         <header className="flex flex-col items-center gap-2 text-center">
-          {/* maybe like a picture of the mascot or something could go here*/}
           <h1 className="font-heading text-2xl font-medium">
-            Good morning {firstName}
+            Good morning{firstName ? ` ${firstName}` : ""}
           </h1>
           <p className="text-sm text-muted-foreground">
             Find today&apos;s plants and earn XP.
@@ -90,6 +94,15 @@ export default function HomePage() {
             </AlertDescription>
           </Alert>
         )}
+
+        {homeQuery.isError ? (
+          <Alert>
+            <AlertTitle>Couldn&apos;t load today&apos;s plants</AlertTitle>
+            <AlertDescription>
+              Check that you&apos;re signed in and the server is running.
+            </AlertDescription>
+          </Alert>
+        ) : null}
 
         <section className="flex flex-col gap-2">
           <div className="flex items-center justify-between text-sm">
@@ -108,7 +121,7 @@ export default function HomePage() {
           <ul className="flex flex-col gap-3">
             {quests.map((quest, index) => (
               <motion.li
-                key={quest.id}
+                key={quest.key}
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ ...TRANSITION1, delay: 0.08 * index }}
@@ -126,23 +139,31 @@ export default function HomePage() {
 function QuestCard({ quest }: { quest: DailyPlantQuest }) {
   return (
     <Card size="sm" className="flex-row items-center gap-0 py-4">
-      <div
-        className={`ml-4 size-16 shrink-0 rounded-2xl ${quest.tileClass}`}
-        aria-hidden
-      />
+      {quest.image_base64 ? (
+        <img
+          src={quest.image_base64}
+          alt=""
+          className="ml-4 size-16 shrink-0 rounded-2xl object-cover"
+        />
+      ) : (
+        <div
+          className="ml-4 size-16 shrink-0 rounded-2xl bg-muted"
+          aria-hidden
+        />
+      )}
       <div className="flex min-w-0 flex-1 flex-col">
         <CardHeader className="gap-1">
           <div className="flex items-start justify-between gap-2">
-            <CardTitle className="leading-tight">{quest.commonName}</CardTitle>
+            <CardTitle className="leading-tight">{quest.common_name}</CardTitle>
             <Badge variant={RARITY_VARIANT[quest.rarity]}>{quest.rarity}</Badge>
           </div>
           <CardDescription className="italic">
-            {quest.scientificName}
+            {quest.scientific_name}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex items-center justify-between gap-2 pb-4">
           <span className="text-xs text-muted-foreground">
-            +{quest.xpReward} XP
+            +{quest.xp_reward} XP
           </span>
           {quest.found ? (
             <span className="flex items-center gap-1 text-xs font-medium text-primary">

@@ -24,32 +24,46 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useLogoutMutation } from "@/features/auth/hooks/useAuthMutations";
-import {
-  FAKE_PROFILE,
-  PlantRarity,
-} from "@/features/profile/types/profileTypes";
+import type { PlantRarity } from "@/features/plant_scan/types";
 import { chronoUtcDateTimeToUserFriendlyFormat } from "@/lib/utils";
 import { TRANSITION1 } from "@/types/motionConstants";
 import { HomeIcon } from "lucide-react";
 import { motion } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
+import { getProfile } from "@/generated";
 
 const RARITY_VARIANT: Record<PlantRarity, "outline" | "secondary" | "default"> =
   {
     Common: "outline",
     Uncommon: "secondary",
     Rare: "default",
+    SuperRare: "default",
+    Exotic: "default",
   };
 
 export default function ProfilePage() {
-  const { firstName, lastName, joinedAtDate, rank, stats, foundPlants } =
-    FAKE_PROFILE;
-  const xpPercent = Math.round((rank.xp / rank.xpToNext) * 100);
+  const profileQuery = useQuery({
+    queryKey: ["profile"],
+    queryFn: getProfile,
+  });
   const logoutMutation = useLogoutMutation();
   const [signOutOpen, setSignOutOpen] = useState(false);
 
-  const initials = `${firstName[0]}${lastName[0]}`.toUpperCase();
-  const displayName = `${firstName} ${lastName}`;
-  const joinedLabel = `Joined ${chronoUtcDateTimeToUserFriendlyFormat(joinedAtDate)}`;
+  const profile = profileQuery.data;
+  const firstName = profile?.first_name ?? "";
+  const lastName = profile?.last_name ?? "";
+  const rank = profile?.rank;
+  const stats = profile?.stats;
+  const foundPlants = profile?.found_plants ?? [];
+  const xpPercent = rank
+    ? Math.round((rank.xp / Math.max(rank.xp_to_next, 1)) * 100)
+    : 0;
+
+  const initials = `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase() || "?";
+  const displayName = [firstName, lastName].filter(Boolean).join(" ") || "Plant explorer";
+  const joinedLabel = profile?.joined_at
+    ? `Joined ${chronoUtcDateTimeToUserFriendlyFormat(profile.joined_at)}`
+    : "";
 
   return (
     <>
@@ -80,7 +94,9 @@ export default function ProfilePage() {
           </Avatar>
           <div>
             <h1 className="font-heading text-2xl font-medium">{displayName}</h1>
-            <p className="text-sm text-muted-foreground">{joinedLabel}</p>
+            {joinedLabel ? (
+              <p className="text-sm text-muted-foreground">{joinedLabel}</p>
+            ) : null}
           </div>
         </header>
 
@@ -89,56 +105,74 @@ export default function ProfilePage() {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <CardDescription>Current rank</CardDescription>
-                <CardTitle className="text-xl">{rank.name}</CardTitle>
+                <CardTitle className="text-xl">
+                  {rank?.name ?? "Weed Eater"}
+                </CardTitle>
               </div>
-              <Badge>Lv. {rank.level}</Badge>
+              <Badge>Lv. {rank?.level ?? 1}</Badge>
             </div>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             <Progress value={xpPercent} aria-label="XP toward next rank" />
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>
-                {rank.xp.toLocaleString()} / {rank.xpToNext.toLocaleString()} XP
+                {(rank?.xp ?? 0).toLocaleString()} /{" "}
+                {(rank?.xp_to_next ?? 30).toLocaleString()} XP
               </span>
-              <span>Next: {rank.nextRank}</span>
+              <span>Next: {rank?.next_rank ?? "Gardener"}</span>
             </div>
           </CardContent>
         </Card>
 
         <div className="grid grid-cols-3 gap-3">
-          <StatTile label="Scans" value={stats.scans} />
-          <StatTile label="Species" value={stats.uniqueSpecies} />
-          <StatTile label="Streak" value={`${stats.streakDays}d`} />
+          <StatTile label="Scans" value={stats?.scans ?? 0} />
+          <StatTile label="Species" value={stats?.unique_species ?? 0} />
+          <StatTile label="Streak" value={`${stats?.streak_days ?? 0}d`} />
         </div>
 
         <section className="flex flex-col gap-3">
           <h2 className="font-heading text-lg font-medium">Found plants</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {foundPlants.map((plant) => (
-              <Card key={plant.id} size="sm" className="gap-3">
-                <div
-                  className={`mx-4 h-20 rounded-2xl ${plant.tileClass}`}
-                  aria-hidden
-                />
-                <CardHeader className="gap-1">
-                  <CardTitle className="leading-tight">
-                    {plant.commonName}
-                  </CardTitle>
-                  <CardDescription className="italic">
-                    {plant.scientificName}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex items-center justify-between gap-2">
-                  <Badge variant={RARITY_VARIANT[plant.rarity]}>
-                    {plant.rarity}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">
-                    {plant.foundAt}
-                  </span>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {foundPlants.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Scan a plant to start your collection.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {foundPlants.map((plant) => (
+                <Card key={plant.id} size="sm" className="gap-3">
+                  {plant.image_base64 ? (
+                    <img
+                      src={plant.image_base64}
+                      alt=""
+                      className="mx-4 h-20 rounded-2xl object-cover"
+                    />
+                  ) : (
+                    <div className="mx-4 h-20 rounded-2xl bg-muted" aria-hidden />
+                  )}
+                  <CardHeader className="gap-1">
+                    <CardTitle className="leading-tight">
+                      {plant.common_name}
+                    </CardTitle>
+                    <CardDescription className="italic">
+                      {plant.scientific_name}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex items-center justify-between gap-2">
+                    {plant.rarity ? (
+                      <Badge variant={RARITY_VARIANT[plant.rarity]}>
+                        {plant.rarity}
+                      </Badge>
+                    ) : (
+                      <span />
+                    )}
+                    <span className="text-xs text-muted-foreground">
+                      {plant.found_on}
+                    </span>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </section>
 
         <AnimatedButton

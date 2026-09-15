@@ -19,5 +19,9 @@ AppConfig(
   file_storage: FileStorageConfig(
     use_local_file_storage: true,
     local_file_storage_directory_path: "../TEST_LOCAL_SERVER"
+  ),
+  openai: OpenAiConfig(
+    api_key: None,
+    model: Some("gpt-4o"),
   )
 )

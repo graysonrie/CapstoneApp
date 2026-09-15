@@ -234,3 +234,82 @@ pub async fn confirm_password_reset(
 
     Ok(())
 }
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ScanPlantPayload {
+    pub result: server_types::plant_scan::responses::PlantScanResult,
+    pub image_data_url: String,
+}
+
+fn mime_and_ext(path: &std::path::Path) -> (&'static str, &'static str) {
+    match path
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .map(|ext| ext.to_ascii_lowercase())
+        .as_deref()
+    {
+        Some("png") => ("image/png", "png"),
+        Some("webp") => ("image/webp", "webp"),
+        Some("gif") => ("image/gif", "gif"),
+        _ => ("image/jpeg", "jpg"),
+    }
+}
+
+#[tauri::command(rename_all = "camelCase")]
+pub async fn scan_plant(
+    api: BackendApiState<'_>,
+    image_path: String,
+) -> Result<ScanPlantPayload, String> {
+    let inner: &Arc<ApiClient> = api.inner();
+    let path = std::path::Path::new(&image_path);
+    let bytes =
+        std::fs::read(path).map_err(|err| format!("failed to read image: {err}"))?;
+    let (mime, _ext) = mime_and_ext(path);
+    let file_name = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("scan.jpg");
+
+    let encoded = {
+        use base64::Engine;
+        format!(
+            "data:{mime};base64,{}",
+            base64::engine::general_purpose::STANDARD.encode(&bytes)
+        )
+    };
+
+    let result = inner
+        .plant_scan_client()
+        .scan_plant(bytes, file_name, mime)
+        .await
+        .map_err(|e| e.user_message())?;
+
+    Ok(ScanPlantPayload {
+        result,
+        image_data_url: encoded,
+    })
+}
+
+#[tauri::command]
+pub async fn get_home(
+    api: BackendApiState<'_>,
+) -> Result<server_types::plant_scan::responses::HomeResponse, String> {
+    let inner: &Arc<ApiClient> = api.inner();
+    inner
+        .plant_scan_client()
+        .get_home()
+        .await
+        .map_err(|e| e.user_message())
+}
+
+#[tauri::command]
+pub async fn get_profile(
+    api: BackendApiState<'_>,
+) -> Result<server_types::plant_scan::responses::ProfileResponse, String> {
+    let inner: &Arc<ApiClient> = api.inner();
+    inner
+        .plant_scan_client()
+        .get_profile()
+        .await
+        .map_err(|e| e.user_message())
+}

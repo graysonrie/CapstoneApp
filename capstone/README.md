@@ -21,3 +21,7 @@ To use persistent state:
 ```ts
 const [yourThing, setYourThing] = useTauriStoreValue("thing");
 ```
+
+Default test user login:
+testuser@test.com
+password

@@ -1,23 +1,44 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Camera } from "lucide-react";
 import AnimatedButton from "../generic/AnimatedButton";
-// import { useIsValidSession } from "@/features/auth/hooks/useIsValidSession";
-// import { useAppStore } from "@/stores/useAppStore";
+import { open } from "@tauri-apps/plugin-dialog";
+import { useScanStore } from "@/features/plant_scan/store/useScanStore";
 
 export default function ScanOnlyMobileNavBar() {
   const pathname = usePathname();
-  // const { data: isLoggedIn, isLoading } = useIsValidSession();
-  // const { isConfirmedOffline } = useAppStore();
+  const router = useRouter();
+  const setPendingScan = useScanStore((state) => state.setPendingScan);
 
-  const isLogin =
+  const hideScan =
     pathname === "/login" ||
     pathname === "/reset-password" ||
-    pathname == "/setup";
+    pathname === "/setup" ||
+    pathname === "/plant_screenshot";
 
-  if (isLogin) {
+  if (hideScan) {
     return null;
+  }
+
+  async function handleScan() {
+    const selected = await open({
+      multiple: false,
+      directory: false,
+      filters: [
+        {
+          name: "Images",
+          extensions: ["png", "jpg", "jpeg", "webp", "heic", "gif"],
+        },
+      ],
+    });
+
+    if (!selected || Array.isArray(selected)) {
+      return;
+    }
+
+    setPendingScan(pathname || "/home", selected);
+    router.push("/plant_screenshot");
   }
 
   return (
@@ -26,7 +47,8 @@ export default function ScanOnlyMobileNavBar() {
       className="fixed inset-x-0 bottom-0 z-50 mx-2 mb-[max(1rem,env(safe-area-inset-bottom))]"
     >
       <AnimatedButton
-        href="/plant_screenshot"
+        type="button"
+        onClick={handleScan}
         className="h-24 w-full flex-col gap-0.5 rounded-full"
         variant="glass"
         aria-label="Scan"

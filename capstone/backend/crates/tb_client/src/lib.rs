@@ -2,7 +2,7 @@ pub mod clients;
 mod error;
 mod util;
 
-pub use clients::{AuthClient, ClockClient, DevClient, UserClient};
+pub use clients::{AuthClient, ClockClient, DevClient, PlantScanClient, UserClient};
 pub use error::{ClientError, ClientResult};
 use reqwest::RequestBuilder;
 use std::sync::RwLock;
@@ -102,6 +102,10 @@ impl ApiClient {
 
     pub fn user_client(&self) -> UserClient<'_> {
         UserClient::new(self)
+    }
+
+    pub fn plant_scan_client(&self) -> PlantScanClient<'_> {
+        PlantScanClient::new(self)
     }
 
     pub fn clock_client(&self) -> ClockClient<'_> {
