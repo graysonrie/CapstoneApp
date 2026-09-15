@@ -151,8 +151,8 @@ function QuestCard({ quest }: { quest: DailyPlantQuest }) {
           aria-hidden
         />
       )}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <CardHeader className="gap-1">
+      <div className="flex min-w-0 flex-1 flex-col pt-5">
+        <CardHeader className="gap-1 ">
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="leading-tight">{quest.common_name}</CardTitle>
             <Badge variant={RARITY_VARIANT[quest.rarity]}>{quest.rarity}</Badge>
