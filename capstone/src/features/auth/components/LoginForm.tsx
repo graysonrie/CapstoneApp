@@ -35,17 +35,12 @@ export default function LoginForm() {
       transition={TRANSITION1}
       className="pt-4"
     >
-      <div className="flex w-full justify-center py-8">
-        <h1 className=" text-semibold text-6xl font-brand">
-          Let&apos;s get you back in
-        </h1>
+      <div className="flex w-full py-8">
+        <h1 className="font-semibold text-3xl font-brand pl-3">Log In</h1>
       </div>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        <FieldGroup className="gap-5">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-10">
+        <FieldGroup className="gap-10">
           <Field>
-            <FieldLabel htmlFor="login-email" className="text-md">
-              Email
-            </FieldLabel>
             <InputGroup className="h-15">
               <InputGroupAddon>
                 <Mail aria-hidden className="size-5" />
@@ -63,9 +58,6 @@ export default function LoginForm() {
             </InputGroup>
           </Field>
           <Field>
-            <FieldLabel htmlFor="login-password" className="text-md">
-              Password
-            </FieldLabel>
             <InputGroup className="h-15">
               <InputGroupAddon>
                 <Lock aria-hidden className="size-5" />

@@ -1,4 +1,4 @@
-import { Inter, Manrope, Tangerine } from "next/font/google";
+import { Inter, Fredoka, Tangerine } from "next/font/google";
 import type { Viewport } from "next";
 import "./globals.css";
 import { QueryProvider } from "@/components/QueryProvider";
@@ -6,13 +6,12 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { cn } from "@/lib/utils";
 import ScanOnlyMobileNavBar from "@/components/mobile-nav-bar/ScanOnlyMobileNavBar";
 
-const tangerine = Tangerine({
+const tangerine = Fredoka({
   subsets: ["latin"],
   variable: "--font-brand",
-  weight: "400",
 });
 
-const manropeHeading = Manrope({
+const manropeHeading = Fredoka({
   subsets: ["latin"],
   variable: "--font-heading",
 });

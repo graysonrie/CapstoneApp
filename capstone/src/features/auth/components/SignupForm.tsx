@@ -35,15 +35,12 @@ export default function SignupForm() {
       animate={{ scale: 1 }}
       transition={TRANSITION1}
     >
-      <div className="flex w-full justify-center py-8">
-        <h1 className=" text-semibold text-6xl font-brand text-center">Welcome to PlantApp!</h1>
+      <div className="flex w-full py-8">
+        <h1 className="font-semibold text-3xl font-brand pl-3">Sign Up</h1>
       </div>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        <FieldGroup className="gap-5">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-10 ">
+        <FieldGroup className="gap-10">
           <Field>
-            <FieldLabel htmlFor="signup-email" className="text-md">
-              Email
-            </FieldLabel>
             <InputGroup className="h-15">
               <InputGroupAddon>
                 <Mail aria-hidden className="size-5" />
@@ -61,9 +58,6 @@ export default function SignupForm() {
             </InputGroup>
           </Field>
           <Field>
-            <FieldLabel htmlFor="signup-password" className="text-md">
-              Password
-            </FieldLabel>
             <InputGroup className="h-15">
               <InputGroupAddon>
                 <Lock aria-hidden className="size-5" />
