@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState } from "react";
@@ -59,8 +60,10 @@ export default function ProfilePage() {
     ? Math.round((rank.xp / Math.max(rank.xp_to_next, 1)) * 100)
     : 0;
 
-  const initials = `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase() || "?";
-  const displayName = [firstName, lastName].filter(Boolean).join(" ") || "Plant explorer";
+  const initials =
+    `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase() || "?";
+  const displayName =
+    [firstName, lastName].filter(Boolean).join(" ") || "Plant explorer";
   const joinedLabel = profile?.joined_at
     ? `Joined ${chronoUtcDateTimeToUserFriendlyFormat(profile.joined_at)}`
     : "";
@@ -106,7 +109,7 @@ export default function ProfilePage() {
               <div>
                 <CardDescription>Current rank</CardDescription>
                 <CardTitle className="text-xl">
-                  {rank?.name ?? "Weed Eater"}
+                  {rank?.name ?? "Unknown"}
                 </CardTitle>
               </div>
               <Badge>Lv. {rank?.level ?? 1}</Badge>
@@ -147,7 +150,10 @@ export default function ProfilePage() {
                       className="mx-4 h-20 rounded-2xl object-cover"
                     />
                   ) : (
-                    <div className="mx-4 h-20 rounded-2xl bg-muted" aria-hidden />
+                    <div
+                      className="mx-4 h-20 rounded-2xl bg-muted"
+                      aria-hidden
+                    />
                   )}
                   <CardHeader className="gap-1">
                     <CardTitle className="leading-tight">

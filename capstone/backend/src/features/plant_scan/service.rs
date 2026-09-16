@@ -55,6 +55,7 @@ pub async fn scan_plant_image(
     }
 
     let (api_key, model) = resolve_openai_settings(config)?;
+    tracing::info!(bytes = image_bytes.len(), mime, "calling OpenAI for plant identification");
     let scan = openai::identify_plant(&api_key, &model, &image_bytes, mime).await?;
 
     if !scan.is_plant {

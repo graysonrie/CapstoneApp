@@ -30,6 +30,7 @@ export interface ProfileAccountInfo {
   foundPlants: FoundPlant[];
 }
 
+// Currently unused since this was just for mocking
 export const FAKE_PROFILE: ProfileAccountInfo = {
   firstName: "Grayson",
   lastName: "Rieger",

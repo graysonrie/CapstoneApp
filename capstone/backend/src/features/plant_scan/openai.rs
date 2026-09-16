@@ -135,11 +135,13 @@ pub async fn identify_plant(
         .build()
         .map_err(|err| PlantScanError::OpenAi(err.to_string()))?;
 
-    let response = client
-        .chat()
-        .create(request)
-        .await
-        .map_err(|err| PlantScanError::OpenAi(err.to_string()))?;
+    let response = tokio::time::timeout(
+        std::time::Duration::from_secs(90),
+        client.chat().create(request),
+    )
+    .await
+    .map_err(|_| PlantScanError::OpenAi("timed out waiting for OpenAI".to_string()))?
+    .map_err(|err| PlantScanError::OpenAi(err.to_string()))?;
 
     let content = response
         .choices

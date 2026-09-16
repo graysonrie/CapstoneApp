@@ -58,7 +58,7 @@ export default function LoginForm() {
                 value={email}
                 onChange={(event) => setValues({ email: event.target.value })}
                 required
-                className="text-lg"
+                className="text-lg "
               />
             </InputGroup>
           </Field>
@@ -93,7 +93,7 @@ export default function LoginForm() {
         <AnimatedButton
           type="submit"
           size="lg"
-          className="w-full "
+          className="w-full"
           disabled={loginMutation.isPending}
         >
           {loginMutation.isPending ? "Logging in…" : "Log In"}

@@ -26,6 +26,7 @@ pub struct PlantScanHttpError(pub (StatusCode, String));
 
 impl From<PlantScanError> for PlantScanHttpError {
     fn from(err: PlantScanError) -> Self {
+        tracing::error!("plant scan error: {err}");
         let (status, msg) = match &err {
             PlantScanError::MissingApiKey => (
                 StatusCode::SERVICE_UNAVAILABLE,
@@ -37,15 +38,11 @@ impl From<PlantScanError> for PlantScanHttpError {
                 StatusCode::UNPROCESSABLE_ENTITY,
                 "could not identify a plant in that photo".into(),
             ),
-            PlantScanError::InvalidModelResponse | PlantScanError::OpenAi(_) => {
-                tracing::error!("plant scan error: {err:?}");
-                (
-                    StatusCode::BAD_GATEWAY,
-                    "failed to analyze the plant".into(),
-                )
-            }
+            PlantScanError::InvalidModelResponse | PlantScanError::OpenAi(_) => (
+                StatusCode::BAD_GATEWAY,
+                "failed to analyze the plant".into(),
+            ),
             PlantScanError::Database(_) | PlantScanError::Storage(_) | PlantScanError::Io(_) => {
-                tracing::error!("plant scan error: {err:?}");
                 (StatusCode::INTERNAL_SERVER_ERROR, "internal server error".into())
             }
         };

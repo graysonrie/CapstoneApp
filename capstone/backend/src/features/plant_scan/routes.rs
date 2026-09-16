@@ -70,6 +70,13 @@ async fn scan_plant(
         )));
     };
 
+    tracing::info!(
+        user_id = user.user_id,
+        image_bytes = image_bytes.len(),
+        mime = %mime,
+        "received plant scan request"
+    );
+
     service::scan_plant_image(
         &state.db,
         &*state.clock,

@@ -95,7 +95,7 @@ pub async fn get_session(api: BackendApiState<'_>) -> Result<Option<SessionInfo>
     match try_load_session(inner).await {
         Ok(info) => Ok(Some(info)),
         Err(tb_client::ClientError::AuthTokenNotSet) => {
-            // No access token yet — try refreshing from a stored refresh token.
+            // No access token yet: try refreshing from a stored refresh token.
             if inner.stored_refresh_token().is_ok() {
                 match inner.auth_client().refresh().await {
                     Ok(_) => {
@@ -118,7 +118,7 @@ pub async fn get_session(api: BackendApiState<'_>) -> Result<Option<SessionInfo>
         Err(err) => {
             warn!("Client error for get_session: {err}");
 
-            // Access may have expired — try refresh before wiping the session.
+            // Access may have expired: try refresh before wiping the session.
             if inner.stored_refresh_token().is_ok() {
                 match inner.auth_client().refresh().await {
                     Ok(_) => {
@@ -260,10 +260,11 @@ pub async fn scan_plant(
     api: BackendApiState<'_>,
     image_path: String,
 ) -> Result<ScanPlantPayload, String> {
+    log::info!("scan_plant: reading {image_path}");
     let inner: &Arc<ApiClient> = api.inner();
     let path = std::path::Path::new(&image_path);
-    let bytes =
-        std::fs::read(path).map_err(|err| format!("failed to read image: {err}"))?;
+    let bytes = std::fs::read(path).map_err(|err| format!("failed to read image: {err}"))?;
+    log::info!("scan_plant: read {} bytes, sending to backend", bytes.len());
     let (mime, _ext) = mime_and_ext(path);
     let file_name = path
         .file_name()

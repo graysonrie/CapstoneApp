@@ -43,7 +43,7 @@ async fn ensure_password_reset_table(
 
 /// Creates the tables for all models specified in `super::models` if they do not already exist.
 ///
-/// NOTE: `ensure_table` only creates missing tables — it does not ALTER existing ones.
+/// NOTE: `ensure_table` only creates missing tables it does not ALTER existing ones.
 /// After adding columns (e.g. first_name/last_name/usage_intent on users), wipe the local
 /// SQLite file (`the_database.db`) or call erase_and_recreate during development.
 async fn ensure_tables(db: &sea_orm::DatabaseConnection) -> Result<(), sea_orm::DbErr> {

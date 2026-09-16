@@ -12,12 +12,25 @@ import { useQueryClient } from "@tanstack/react-query";
 
 export default function PlantScreenshotPage() {
   const router = useRouter();
-  const { pendingImagePath, previousPath, setResult, clearPending, markScanStarted } =
-    useScanStore();
+  const pendingImagePath = useScanStore((state) => state.pendingImagePath);
+  const previousPath = useScanStore((state) => state.previousPath);
+  const result = useScanStore((state) => state.result);
+  const setResult = useScanStore((state) => state.setResult);
+  const clearPending = useScanStore((state) => state.clearPending);
+  const markScanStarted = useScanStore((state) => state.markScanStarted);
   const [progress, setProgress] = useState(8);
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    if (result) {
+      router.replace("/plant_analysis");
+    }
+  }, [result, router]);
+
+  useEffect(() => {
+    if (result) {
+      return;
+    }
     if (!pendingImagePath) {
       router.replace(previousPath || "/home");
       return;
@@ -26,23 +39,19 @@ export default function PlantScreenshotPage() {
       return;
     }
 
-    let cancelled = false;
     const timer = window.setInterval(() => {
       setProgress((value) => (value >= 90 ? value : value + 4));
     }, 400);
 
     scanPlant({ imagePath: pendingImagePath })
       .then((payload) => {
-        if (cancelled) return;
         setProgress(100);
         setResult(payload.result, payload.image_data_url);
         queryClient.invalidateQueries({ queryKey: ["home"] });
         queryClient.invalidateQueries({ queryKey: ["profile"] });
-        router.replace("/plant_analysis");
       })
       .catch((err) => {
         console.warn("plant scan failed", err);
-        if (cancelled) return;
         clearPending();
         router.replace(previousPath || "/home");
       })
@@ -51,12 +60,12 @@ export default function PlantScreenshotPage() {
       });
 
     return () => {
-      cancelled = true;
       window.clearInterval(timer);
     };
   }, [
     pendingImagePath,
     previousPath,
+    result,
     router,
     setResult,
     clearPending,

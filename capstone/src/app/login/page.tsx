@@ -24,14 +24,7 @@ export default function LoginPage() {
               Sign Up
             </p>
           </div>
-          <div className="">
-            <Link
-              href="/reset-password"
-              className="text-lg text-primary hover:underline font-bold"
-            >
-              Forgot password?
-            </Link>
-          </div>
+
         </div>
       ) : (
         <div className="flex-col flex items-center text-lg">

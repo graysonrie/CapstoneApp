@@ -24,6 +24,7 @@ impl<'a> PlantScanClient<'a> {
             .api
             .http
             .post(self.api.base_url.join("/plant-scan")?.to_string())
+            .timeout(std::time::Duration::from_secs(120))
             .multipart(form);
         let response = self.api.authenticated_request(request)?.send().await?;
         parse_json_response(response).await
