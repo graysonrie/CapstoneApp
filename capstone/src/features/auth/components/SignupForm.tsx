@@ -49,7 +49,7 @@ export default function SignupForm() {
                 id="signup-email"
                 type="email"
                 autoComplete="email"
-                placeholder="your_email@example.com"
+                placeholder="Email"
                 value={email}
                 onChange={(event) => setValues({ email: event.target.value })}
                 required
@@ -66,7 +66,7 @@ export default function SignupForm() {
                 id="signup-password"
                 type="password"
                 autoComplete="new-password"
-                placeholder="Minimum 8 characters"
+                placeholder="Password"
                 value={password}
                 onChange={(event) =>
                   setValues({ password: event.target.value })
