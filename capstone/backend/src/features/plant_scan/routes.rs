@@ -1,4 +1,4 @@
-use crate::features::auth::middleware::{require_auth, AuthenticatedUser};
+use crate::features::auth::middleware::{AuthenticatedUser, require_auth};
 use crate::prelude::*;
 use axum::extract::Multipart;
 
@@ -18,7 +18,7 @@ async fn home(
     user: AuthenticatedUser,
     State(state): State<AppState>,
 ) -> Result<Json<HomeResponse>, PlantScanHttpError> {
-    service::get_home(&state.db, state.file_storage.as_ref(), &*state.clock, user.user_id)
+    service::get_home(&state.db, state.file_storage, &*state.clock, user.user_id)
         .await
         .map(Json)
         .map_err(PlantScanHttpError::from)
@@ -80,7 +80,7 @@ async fn scan_plant(
     service::scan_plant_image(
         &state.db,
         &*state.clock,
-        state.file_storage.as_ref(),
+        state.file_storage,
         &state.app_config,
         user.user_id,
         image_bytes,

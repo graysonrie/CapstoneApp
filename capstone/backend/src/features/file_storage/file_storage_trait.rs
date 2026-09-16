@@ -5,6 +5,9 @@ use tokio::{fs, io::AsyncWriteExt};
 use crate::features::file_storage::{FileStorageError, FileStorageResult};
 use crate::prelude::*;
 
+/// Parameter for whatever service the app has set up to handle
+/// server-based object storage. Saves you from having to write
+/// `dyn FileStorage + Send + Sync`
 pub type FileStorageStateType = Arc<dyn FileStorage + Send + Sync>;
 
 #[async_trait]
@@ -19,17 +22,9 @@ pub trait FileStorage {
         relative_path: &str,
     ) -> FileStorageResult<Vec<String>>;
     async fn delete_dir(&self, relative_path: &str) -> FileStorageResult<()>;
-    async fn write_file_bytes(
-        &self,
-        relative_path: &str,
-        bytes: &[u8],
-    ) -> FileStorageResult<()>;
+    async fn write_file_bytes(&self, relative_path: &str, bytes: &[u8]) -> FileStorageResult<()>;
     /// Appends bytes to a file, creating the file and parent directories if needed.
-    async fn append_file_bytes(
-        &self,
-        relative_path: &str,
-        bytes: &[u8],
-    ) -> FileStorageResult<()>;
+    async fn append_file_bytes(&self, relative_path: &str, bytes: &[u8]) -> FileStorageResult<()>;
     async fn delete_file(&self, relative_path: &str) -> FileStorageResult<()>;
     async fn read_file_bytes(&self, relative_path: &str) -> FileStorageResult<Vec<u8>>;
 }
@@ -149,11 +144,7 @@ impl FileStorage for LocalFileStorage {
         }
     }
 
-    async fn write_file_bytes(
-        &self,
-        relative_path: &str,
-        bytes: &[u8],
-    ) -> FileStorageResult<()> {
+    async fn write_file_bytes(&self, relative_path: &str, bytes: &[u8]) -> FileStorageResult<()> {
         let path = self.resolve_path(relative_path)?;
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent).await?;
@@ -162,11 +153,7 @@ impl FileStorage for LocalFileStorage {
         Ok(())
     }
 
-    async fn append_file_bytes(
-        &self,
-        relative_path: &str,
-        bytes: &[u8],
-    ) -> FileStorageResult<()> {
+    async fn append_file_bytes(&self, relative_path: &str, bytes: &[u8]) -> FileStorageResult<()> {
         let path = self.resolve_path(relative_path)?;
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent).await?;

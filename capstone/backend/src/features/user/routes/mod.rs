@@ -54,7 +54,7 @@ async fn me(
 ) -> Result<Json<ProfileResponse>, crate::features::plant_scan::errors::PlantScanHttpError> {
     crate::features::plant_scan::service::get_profile(
         &state.db,
-        state.file_storage.as_ref(),
+        state.file_storage,
         &*state.clock,
         user.user_id,
     )

@@ -6,3 +6,5 @@
   (EDIT): yeah they work but ONLY on the prod build of 'pnpm tauri build ios --open' for whatever reason
 
 - Do something about the nvm hack in project.yml for the xcode build to recognize pnpm
+
+- The analyzing plant screen could be more fun and dynamic. Right now its just a progress bar. Maybe like a animated thing 

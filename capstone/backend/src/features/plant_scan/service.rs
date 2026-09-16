@@ -9,7 +9,7 @@ use crate::features::db::models::user::{
     self as user_model, max_xp_needed_for_level, rank_title_for_level,
 };
 use crate::features::db::models::user_plant_finds::Rarity as DbRarity;
-use crate::features::file_storage::file_storage_trait::FileStorage;
+use crate::features::file_storage::file_storage_trait::FileStorageStateType;
 use crate::features::user;
 use crate::prelude::*;
 use base64::Engine;
@@ -37,10 +37,12 @@ pub fn resolve_openai_settings(config: &AppConfig) -> Result<(String, String), P
     Ok((api_key, model))
 }
 
+// technically this could be collapsed but this works for now
+#[allow(clippy::too_many_arguments)]
 pub async fn scan_plant_image(
     db: &DatabaseConnection,
     clock: &impl Clock,
-    storage: &(dyn FileStorage + Send + Sync),
+    storage: FileStorageStateType,
     config: &AppConfig,
     user_id: UserIdType,
     image_bytes: Vec<u8>,
@@ -55,7 +57,11 @@ pub async fn scan_plant_image(
     }
 
     let (api_key, model) = resolve_openai_settings(config)?;
-    tracing::info!(bytes = image_bytes.len(), mime, "calling OpenAI for plant identification");
+    tracing::info!(
+        bytes = image_bytes.len(),
+        mime,
+        "calling OpenAI for plant identification"
+    );
     let scan = openai::identify_plant(&api_key, &model, &image_bytes, mime).await?;
 
     if !scan.is_plant {
@@ -84,9 +90,9 @@ pub async fn scan_plant_image(
 
     let existing = repo::list_by_user(db, user_id).await?;
     let key = species_key(&common_name, &scientific_name);
-    let is_new_species = !existing.iter().any(|find| {
-        species_key(&find.name, &find.scientific_name) == key
-    });
+    let is_new_species = !existing
+        .iter()
+        .any(|find| species_key(&find.name, &find.scientific_name) == key);
 
     let today = clock.now_utc().date_naive();
     let todays_finds = repo::list_by_user_on_date(db, user_id, today).await?;
@@ -98,12 +104,12 @@ pub async fn scan_plant_image(
                 .is_some_and(|matched| matched.key == plant.key)
         })
     });
-    let daily_match = daily_def.filter(|_| !daily_already_found_today).map(|plant| {
-        DailyMatch {
+    let daily_match = daily_def
+        .filter(|_| !daily_already_found_today)
+        .map(|plant| DailyMatch {
             key: plant.key.to_string(),
             common_name: plant.common_name.to_string(),
-        }
-    });
+        });
 
     let mut xp_awarded = 0;
     if is_new_species {
@@ -177,7 +183,7 @@ async fn apply_xp(
 
 pub async fn get_home(
     db: &DatabaseConnection,
-    storage: &(dyn FileStorage + Send + Sync),
+    storage: FileStorageStateType,
     clock: &impl Clock,
     user_id: UserIdType,
 ) -> Result<HomeResponse, PlantScanError> {
@@ -225,7 +231,7 @@ fn load_daily_image_base64(plant: &DailyPlantDef) -> Option<String> {
 
 pub async fn get_profile(
     db: &DatabaseConnection,
-    storage: &(dyn FileStorage + Send + Sync),
+    storage: FileStorageStateType,
     clock: &impl Clock,
     user_id: UserIdType,
 ) -> Result<ProfileResponse, PlantScanError> {
