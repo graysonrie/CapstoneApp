@@ -1,0 +1,8 @@
+[default]
+description = "Default permissions for the plugin"
+permissions = ["allow-take-photo"]
+
+[[permission]]
+identifier = "allow-take-photo"
+description = "Opens native camera UI"
+commands.allow = ["take_photo"]

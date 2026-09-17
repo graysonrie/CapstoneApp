@@ -5,6 +5,7 @@ import { Camera } from "lucide-react";
 import AnimatedButton from "../generic/AnimatedButton";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useScanStore } from "@/features/plant_scan/store/useScanStore";
+import { takePhoto } from "../../lib/camera"
 
 export default function ScanOnlyMobileNavBar() {
   const pathname = usePathname();
@@ -22,22 +23,13 @@ export default function ScanOnlyMobileNavBar() {
   }
 
   async function handleScan() {
-    const selected = await open({
-      multiple: false,
-      directory: false,
-      filters: [
-        {
-          name: "Images",
-          extensions: ["png", "jpg", "jpeg", "webp", "heic", "gif"],
-        },
-      ],
-    });
+    const img = await takePhoto()
 
-    if (!selected || Array.isArray(selected)) {
+    if (!img || Array.isArray(img)) {
       return;
     }
 
-    setPendingScan(pathname || "/home", selected);
+    setPendingScan(pathname || "/home", img);
     router.push("/plant_screenshot");
   }
 
