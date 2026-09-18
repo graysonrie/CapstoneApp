@@ -25,10 +25,8 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Camera<R: Runtime>(PluginHandle<R>);
 
 impl<R: Runtime> Camera<R> {
-  pub fn take_photo(&self) -> crate::Result<PhotoResponse> {
-    self
-      .0
-      .run_mobile_plugin("takePhoto", ())
-      .map_err(Into::into)
+  pub fn take_photo(&self) -> crate::Result<String> {
+    let response: PhotoResponse = self.0.run_mobile_plugin("takePhoto", ())?;
+    Ok(response.path)
   }
 }

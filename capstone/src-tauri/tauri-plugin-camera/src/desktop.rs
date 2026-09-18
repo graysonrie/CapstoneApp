@@ -15,7 +15,7 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Camera<R: Runtime>(AppHandle<R>);
 
 impl<R: Runtime> Camera<R> {
-  pub fn take_photo(&self) -> crate::Result<PhotoResponse> {
+  pub fn take_photo(&self) -> crate::Result<String> {
     // No native camera on desktop; let the user pick an image file instead.
     let file = self
       .0
@@ -25,9 +25,7 @@ impl<R: Runtime> Camera<R> {
       .blocking_pick_file();
 
     match file {
-      Some(path) => Ok(PhotoResponse {
-        path: path.to_string(),
-      }),
+      Some(path) => Ok(path.to_string()),
       None => Err(
         std::io::Error::new(std::io::ErrorKind::Interrupted, "photo selection was cancelled")
           .into(),
