@@ -3,6 +3,7 @@ import type { Viewport } from "next";
 import "./globals.css";
 import { QueryProvider } from "@/components/QueryProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import ScanOnlyMobileNavBar from "@/components/mobile-nav-bar/ScanOnlyMobileNavBar";
 
@@ -52,6 +53,7 @@ export default function RootLayout({
               {children}
             </div>
             <ScanOnlyMobileNavBar />
+            <Toaster />
           </QueryProvider>
         </ThemeProvider>
       </body>

@@ -7,4 +7,6 @@
 
 - Do something about the nvm hack in project.yml for the xcode build to recognize pnpm
 
-- The analyzing plant screen could be more fun and dynamic. Right now its just a progress bar. Maybe like a animated thing 
+- The analyzing plant screen could be more fun and dynamic. Right now its just a progress bar. Maybe like a animated thing
+
+- before publish: remove the 'remote' key in capabilities default.json

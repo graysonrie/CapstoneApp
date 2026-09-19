@@ -27,7 +27,7 @@ dirs = "6.0.0"
 tauri-plugin-store = "2"
 tauri-plugin-dialog = "2.7"
 tauri-plugin-os = "2"
-tauri-plugin-camera = { path = "tauri-plugin-camera" }
+tauri-plugin-camera = { path = "crates/tauri-plugin-camera" }
 window-vibrancy = "0.7.1"
 uuid = "1.20.0"
 chrono = "0.4.44"

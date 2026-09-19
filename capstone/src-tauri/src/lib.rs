@@ -1,8 +1,6 @@
-use tauri::Manager;
-
-mod prelude;
-mod constants;
 mod commands;
+mod constants;
+mod prelude;
 mod services;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
