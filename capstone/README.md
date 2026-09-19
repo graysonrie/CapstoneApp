@@ -25,3 +25,5 @@ const [yourThing, setYourThing] = useTauriStoreValue("thing");
 Default test user login:
 testuser@test.com
 password
+
+by the way to reliably run prod build of Tauri app on ios do `pnpm tauri ios build --open` otherwise it goes nuts
