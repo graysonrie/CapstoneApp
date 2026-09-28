@@ -47,4 +47,13 @@ impl<'a> PlantScanClient<'a> {
         let response = self.api.authenticated_request(request)?.send().await?;
         parse_json_response(response).await
     }
+
+    pub async fn get_user_image_locations(&self) -> ClientResult<Vec<UserPlantImageLocation>> {
+        let request = self
+            .api
+            .http
+            .get(self.api.base_url.join("/plant-image-locations")?.to_string());
+        let response = self.api.authenticated_request(request)?.send().await?;
+        parse_json_response(response).await
+    }
 }

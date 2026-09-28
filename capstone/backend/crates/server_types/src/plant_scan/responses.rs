@@ -121,6 +121,22 @@ pub struct CollectionPlant {
     pub image_base64: Option<String>,
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone, Copy)]
+pub struct ImageGeolocation {
+    pub latitude: f64,
+    pub longitude: f64,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct UserPlantImageLocation {
+    pub image_id: i32,
+    pub common_name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub location: Option<ImageGeolocation>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub thumbnail_data_url: Option<String>,
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ProfileRank {
     pub level: u32,
