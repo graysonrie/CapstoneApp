@@ -10,8 +10,19 @@ const MAX_IMAGE_BYTES: usize = 10 * 1024 * 1024;
 pub fn plant_scan_router(state: AppState) -> Router<AppState> {
     Router::new()
         .route("/plant-scan", post(scan_plant))
+        .route("/plant-image-locations", get(plant_image_locations))
         .route("/home", get(home))
         .route_layer(axum::middleware::from_fn_with_state(state, require_auth))
+}
+
+async fn plant_image_locations(
+    user: AuthenticatedUser,
+    State(state): State<AppState>,
+) -> Result<Json<Vec<UserPlantImageLocation>>, PlantScanHttpError> {
+    service::get_user_plant_image_locations(&state.db, state.file_storage, user.user_id)
+        .await
+        .map(Json)
+        .map_err(PlantScanHttpError::from)
 }
 
 async fn home(

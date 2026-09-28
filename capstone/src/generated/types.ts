@@ -9,6 +9,7 @@
 
 export type {
   HomeResponse,
+  UserPlantImageLocation,
   ProfileResponse,
   ScanPlantPayload,
 } from "../features/plant_scan/types";

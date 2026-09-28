@@ -13,10 +13,12 @@ use crate::features::file_storage::file_storage_trait::FileStorageStateType;
 use crate::features::user;
 use crate::prelude::*;
 use base64::Engine;
+use exif::{In, Tag, Value};
 use server_types::plant_scan::responses::{
-    CollectionPlant, DailyMatch, DailyPlantQuest, HomeResponse, ProfileRank, ProfileResponse,
-    ProfileStats, Rarity,
+    CollectionPlant, DailyMatch, DailyPlantQuest, HomeResponse, ImageGeolocation, ProfileRank,
+    ProfileResponse, ProfileStats, Rarity, UserPlantImageLocation,
 };
+use std::io::Cursor;
 
 const MAX_IMAGE_BYTES: usize = 10 * 1024 * 1024;
 
@@ -296,6 +298,131 @@ pub async fn get_profile(
         },
         found_plants,
     })
+}
+
+pub async fn get_user_plant_image_locations(
+    db: &DatabaseConnection,
+    storage: FileStorageStateType,
+    user_id: UserIdType,
+) -> Result<Vec<UserPlantImageLocation>, PlantScanError> {
+    let finds = repo::list_by_user(db, user_id).await?;
+    let mut image_locations = Vec::new();
+
+    for find in finds {
+        let Some(image_path) = find.image_path.as_deref() else {
+            continue;
+        };
+        let image_bytes = storage.read_file_bytes(image_path).await?;
+        let location = read_image_geolocation(&image_bytes);
+        let thumbnail_data_url = location
+            .as_ref()
+            .and_then(|_| image_thumbnail_data_url(&image_bytes));
+        image_locations.push(UserPlantImageLocation {
+            image_id: find.id,
+            common_name: find.name,
+            location,
+            thumbnail_data_url,
+        });
+    }
+
+    Ok(image_locations)
+}
+
+fn image_thumbnail_data_url(image_bytes: &[u8]) -> Option<String> {
+    let thumbnail = image::load_from_memory(image_bytes)
+        .ok()?
+        .thumbnail(320, 240);
+    let mut encoded_image = Cursor::new(Vec::new());
+    thumbnail
+        .write_to(&mut encoded_image, image::ImageFormat::Jpeg)
+        .ok()?;
+    Some(format!(
+        "data:image/jpeg;base64,{}",
+        base64::engine::general_purpose::STANDARD.encode(encoded_image.into_inner())
+    ))
+}
+
+fn read_image_geolocation(image_bytes: &[u8]) -> Option<ImageGeolocation> {
+    let mut reader = exif::Reader::new();
+    reader.continue_on_error(true);
+    let exif = reader
+        .read_from_container(&mut Cursor::new(image_bytes))
+        .or_else(|error| {
+            error.distill_partial_result(|errors| {
+                tracing::warn!(?errors, "recovering image GPS from partial EXIF data");
+            })
+        })
+        .ok()?;
+    let latitude = read_exif_coordinate(
+        &exif,
+        Tag::GPSLatitude,
+        Tag::GPSLatitudeRef,
+        b"N",
+        b"S",
+        90.0,
+    )?;
+    let longitude = read_exif_coordinate(
+        &exif,
+        Tag::GPSLongitude,
+        Tag::GPSLongitudeRef,
+        b"E",
+        b"W",
+        180.0,
+    )?;
+
+    Some(ImageGeolocation {
+        latitude,
+        longitude,
+    })
+}
+
+fn read_exif_coordinate(
+    exif: &exif::Exif,
+    coordinate_tag: Tag,
+    reference_tag: Tag,
+    positive_reference: &[u8],
+    negative_reference: &[u8],
+    maximum_degrees: f64,
+) -> Option<f64> {
+    let coordinate_field = exif.get_field(coordinate_tag, In::PRIMARY)?;
+    let Value::Rational(parts) = &coordinate_field.value else {
+        return None;
+    };
+    let [degrees, minutes, seconds] = parts.as_slice() else {
+        return None;
+    };
+    if [degrees, minutes, seconds]
+        .iter()
+        .any(|part| part.denom == 0)
+    {
+        return None;
+    }
+
+    let reference_field = exif.get_field(reference_tag, In::PRIMARY)?;
+    let Value::Ascii(references) = &reference_field.value else {
+        return None;
+    };
+    let reference = references.first()?.as_slice();
+    let sign = if reference == positive_reference {
+        1.0
+    } else if reference == negative_reference {
+        -1.0
+    } else {
+        return None;
+    };
+
+    let degrees = degrees.to_f64();
+    let minutes = minutes.to_f64();
+    let seconds = seconds.to_f64();
+    if minutes >= 60.0 || seconds >= 60.0 {
+        return None;
+    }
+    let absolute_degrees = degrees + minutes / 60.0 + seconds / 3600.0;
+    if !absolute_degrees.is_finite() || absolute_degrees > maximum_degrees {
+        return None;
+    }
+
+    Some(sign * absolute_degrees)
 }
 
 fn format_found_on(date: chrono::NaiveDate) -> String {
