@@ -7,6 +7,10 @@ use crate::services::token_store;
 pub fn register_services(handle: &AppHandle) {
     let handle = handle.clone();
 
+    // On a physical device use my mac LAN IP for now
+    #[cfg(target_os = "ios")]
+    let server_endpoint = "http://192.168.1.54:3001";
+    #[cfg(not(target_os = "ios"))]
     let server_endpoint = "http://127.0.0.1:3001";
     let backend_api = Arc::new(ApiClient::new(server_endpoint));
 

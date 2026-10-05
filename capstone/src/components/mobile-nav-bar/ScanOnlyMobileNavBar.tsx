@@ -2,9 +2,10 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { Camera } from "lucide-react";
+import { toast } from "sonner";
 import AnimatedButton from "../generic/AnimatedButton";
-import { open } from "@tauri-apps/plugin-dialog";
 import { useScanStore } from "@/features/plant_scan/store/useScanStore";
+import { takePhoto } from "../../lib/camera";
 
 export default function ScanOnlyMobileNavBar() {
   const pathname = usePathname();
@@ -22,23 +23,21 @@ export default function ScanOnlyMobileNavBar() {
   }
 
   async function handleScan() {
-    const selected = await open({
-      multiple: false,
-      directory: false,
-      filters: [
-        {
-          name: "Images",
-          extensions: ["png", "jpg", "jpeg", "webp", "heic", "gif"],
-        },
-      ],
-    });
+    try {
+      const img = await takePhoto();
 
-    if (!selected || Array.isArray(selected)) {
-      return;
+      if (!img) {
+        return;
+      }
+
+      setPendingScan(pathname || "/home", img);
+      router.push("/plant_screenshot");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : String(error ?? "Unknown error");
+      console.error("takePhoto failed:", error);
+      toast.error(`Camera failed: ${message}`);
     }
-
-    setPendingScan(pathname || "/home", selected);
-    router.push("/plant_screenshot");
   }
 
   return (
