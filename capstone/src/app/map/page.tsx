@@ -3,10 +3,23 @@
 import { useEffect, useRef, useState } from "react"
 import * as maptiler from "@maptiler/sdk"
 import AnimatedButton from "@/components/generic/AnimatedButton";
-import { ArrowLeft, LocateFixed, Sprout } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ArrowLeft, LocateFixed, Sprout, Flame, Pin, type LucideIcon } from "lucide-react";
 import PointGridBg from "@/components/PointGridBg";
 import { useQuery } from "@tanstack/react-query";
 import { getUserImageLocations } from "@/generated";
+
+type MapLayer = "point" | "heatmap"
+interface MapLayerConfig {
+    id: MapLayer,
+    label: string,
+    icon: LucideIcon
+}
+
+const mapModes: Array<MapLayerConfig> = [
+    {id: "point", label: "Pins", icon: Pin},
+    {id: "heatmap", label: "Heatmap", icon: Flame}
+]
 
 export default function MapPage() {
 
@@ -15,6 +28,8 @@ export default function MapPage() {
     const markers = useRef<maptiler.Marker[]>([]);
     const [mapInstance, setMapInstance] = useState<maptiler.Map | null>(null);
     const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+    const [selectedLayer, setSelectedLayer] = useState<MapLayer>("point");
+    const [layerPopoverOpen, setLayerPopoverOpen] = useState(false);
 
     const imageLocationsQuery = useQuery({
         queryKey: ["imageLocations"],
@@ -22,6 +37,24 @@ export default function MapPage() {
     })
     const imageLocations = imageLocationsQuery.data ?? []
     const locatedImages = imageLocations.filter((image) => image.location)
+
+    const mode = mapModes.find((c) => c.id == selectedLayer) ?? mapModes[0]
+    const otherModes = mapModes.filter((c) => c.id != selectedLayer)
+
+    const pointsToGeoJSON = (points: [number, number][]) => {
+        const geodata: GeoJSON.FeatureCollection<GeoJSON.Point> = {
+            type: "FeatureCollection",
+            features: points.map((c) => ({
+                type: "Feature",
+                properties: {},
+                geometry: {
+                    type: "Point",
+                    coordinates: c as number[],
+                }
+            }))
+        }
+        return geodata;
+    }
 
     useEffect(() => {
         if (!mapContainer.current) return
@@ -78,6 +111,9 @@ export default function MapPage() {
             ];
             points.push(coordinates);
 
+            // only build markers in point mode; heatmap still needs every point
+            if (selectedLayer != "point") continue;
+
             const markerElement = document.createElement("button");
             markerElement.type = "button";
             markerElement.setAttribute(
@@ -131,6 +167,23 @@ export default function MapPage() {
             markers.current.push(marker);
         }
 
+        const geodata = pointsToGeoJSON(points);
+        let heatmapIds: { heatmapLayerId: string; heatmapSourceId: string } | null = null;
+        const addHeatmapLayers = () => {
+            if (heatmapIds) return;
+            heatmapIds = maptiler.helpers.addHeatmap(mapInstance, {
+                data: geodata,
+            });
+        };
+
+        if (selectedLayer == "heatmap") {
+            if (mapInstance.isStyleLoaded()) {
+                addHeatmapLayers();
+            } else {
+                mapInstance.once("load", addHeatmapLayers);
+            }
+        }
+
         if (points.length === 1) {
             mapInstance.flyTo({ center: points[0], zoom: 14, duration: 700 });
         } else if (points.length > 1) {
@@ -146,10 +199,16 @@ export default function MapPage() {
         }
 
         return () => {
+            mapInstance.off("load", addHeatmapLayers);
+            if (heatmapIds && map.current === mapInstance) {
+                const { heatmapLayerId, heatmapSourceId } = heatmapIds;
+                if (mapInstance.getLayer(heatmapLayerId)) mapInstance.removeLayer(heatmapLayerId);
+                if (mapInstance.getSource(heatmapSourceId)) mapInstance.removeSource(heatmapSourceId);
+            }
             markers.current.forEach((marker) => marker.remove());
             markers.current = [];
         };
-    }, [mapInstance, imageLocationsQuery.data]);
+    }, [mapInstance, imageLocationsQuery.data, selectedLayer]);
 
     const centerOnUser = () => {
         if (!userLocation) return;
@@ -184,7 +243,44 @@ export default function MapPage() {
                 </div>
             </header>
 
-            <footer className="absolute inset-x-4 bottom-4 z-10 flex justify-end">
+            <footer className="absolute inset-x-4 bottom-6 z-10 flex justify-end">
+                <Popover open={layerPopoverOpen} onOpenChange={setLayerPopoverOpen}>
+                    <PopoverTrigger asChild>
+                        <AnimatedButton
+                            type="button"
+                            size="icon"
+                            variant="defaultGlass"    
+                            className="size-12 rounded-full border-white/60 bg-white/85 text-foreground shadow-xl backdrop-blur-xl disabled:opacity-60"
+                            title={mode.label}
+                        > 
+                            <mode.icon className="size-6"/>
+                        </AnimatedButton> 
+                    </PopoverTrigger>
+                    <PopoverContent
+                        side="top"
+                        align="center"
+                        sideOffset={12}
+                        className="w-auto flex-col items-center gap-3 border-none bg-transparent p-0 shadow-none ring-0"
+                    >
+                        {otherModes.map((c) => (
+                            <AnimatedButton
+                                key={c.id}
+                                type="button"
+                                onClick={() => {
+                                    setSelectedLayer(c.id);
+                                    setLayerPopoverOpen(false);
+                                }}
+                                size="icon"
+                                variant="defaultGlass"
+                                className="size-12 rounded-full border-white/60 bg-white/85 text-foreground shadow-xl backdrop-blur-xl disabled:opacity-60"
+                                title={c.label}
+                                aria-label={c.label}
+                            >
+                                <c.icon className="size-6" />
+                            </AnimatedButton>
+                        ))}
+                    </PopoverContent>
+                </Popover>
                 <AnimatedButton
                     type="button"
                     onClick={centerOnUser}
@@ -195,7 +291,7 @@ export default function MapPage() {
                     aria-label="Center map on your location"
                     title="Center on your location"
                 >
-                    <LocateFixed className="size-5" />
+                    <LocateFixed className="size-6" />
                 </AnimatedButton>
             </footer>
         </div>

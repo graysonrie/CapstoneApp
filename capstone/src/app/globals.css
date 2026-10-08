@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
@@ -194,3 +194,7 @@ body {
     animation: none;
   }
 }
+
+
+/* Only scan app sources; auto-detection would crawl src-tauri/target and backend. */
+@source "../";
