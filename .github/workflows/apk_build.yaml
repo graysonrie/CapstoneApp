@@ -46,10 +46,10 @@ jobs:
 
       - name: Install Android SDK/NDK
         run: |
-          sdkmanager "platform-tools" \
-            "platforms;android-35" \
-            "build-tools;35.0.0" \
-            "ndk;30.0.0"
+            android sdk install platform-tools
+            android sdk install platforms/android-35
+            android sdk install build-tools/35.0.0
+            android sdk install ndk
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
