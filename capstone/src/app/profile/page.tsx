@@ -128,7 +128,7 @@ export default function ProfilePage() {
         </Card>
 
         <div className="grid grid-cols-3 gap-3">
-          <StatTile label="Scans" value={stats?.scans ?? 0} />
+          <StatTile label="Scans" value={stats?.scans ?? 0} onClick={() => window.location.href = "/collection"}/>
           <StatTile label="Species" value={stats?.unique_species ?? 0} />
           <StatTile label="Streak" value={`${stats?.streak_days ?? 0}d`} />
         </div>
@@ -191,9 +191,9 @@ export default function ProfilePage() {
   );
 }
 
-function StatTile({ label, value }: { label: string; value: number | string }) {
+function StatTile({ label, value, onClick }: { label: string; value: number | string, onClick?: () => void}) {
   return (
-    <Card size="sm" className="items-center py-4 text-center">
+    <Card size="sm" className="items-center py-4 text-center" onClick={onClick}>
       <p className="font-heading text-xl font-medium">{value}</p>
       <p className="text-xs text-muted-foreground">{label}</p>
     </Card>

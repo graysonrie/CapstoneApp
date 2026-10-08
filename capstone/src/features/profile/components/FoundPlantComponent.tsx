@@ -33,7 +33,7 @@ export default function FoundPlantComponent({
   rarity,
 }: Props) {
   return (
-    <Card key={id} size="sm" className="gap-3">
+    <Card key={id} size="sm" className="h-full gap-3 text-center">
       <CardHeader className=" ">
         <CardTitle className="leading-tight">{commonName}</CardTitle>
         <CardDescription className="italic">{scientificName}</CardDescription>
@@ -42,12 +42,12 @@ export default function FoundPlantComponent({
           <Image
             src={imageBase64}
             alt=""
-            className="mx-auto h-20 rounded-2xl object-cover"
-            width={80}
-            height={80}
+            className="mx-auto mt-2 aspect-square w-full rounded-2xl object-cover"
+            width={160}
+            height={160}
           />
         ) : (
-          <div className="mx-4 h-20 rounded-2xl bg-muted" aria-hidden />
+          <div className="mt-2 aspect-square w-full rounded-2xl bg-muted" aria-hidden />
         )}
       </CardHeader>
       <CardContent className="flex flex-col items-center justify-between gap-1">
