@@ -7,6 +7,7 @@ on:
 jobs:
   build-android:
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: capstone
@@ -16,12 +17,15 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
+        with:
+          package_json_file: capstone/package.json
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
+          cache-dependency-path: capstone/pnpm-lock.yaml
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -56,5 +60,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: android-apk
+          name: android-debug-apk
           path: capstone/src-tauri/gen/android/app/build/outputs/apk/**/*.apk
