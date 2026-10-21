@@ -25,22 +25,14 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useLogoutMutation } from "@/features/auth/hooks/useAuthMutations";
-import type { PlantRarity } from "@/features/plant_scan/types";
 import { chronoUtcDateTimeToUserFriendlyFormat } from "@/lib/utils";
 import { TRANSITION1 } from "@/types/motionConstants";
 import { HomeIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { getProfile } from "@/generated";
-
-const RARITY_VARIANT: Record<PlantRarity, "outline" | "secondary" | "default"> =
-  {
-    Common: "outline",
-    Uncommon: "secondary",
-    Rare: "default",
-    SuperRare: "default",
-    Exotic: "default",
-  };
+import FoundPlantComponent from "@/features/profile/components/FoundPlantComponent";
+import { PlantRarity } from "@/features/profile/types/profileTypes";
 
 export default function ProfilePage() {
   const profileQuery = useQuery({
@@ -142,40 +134,15 @@ export default function ProfilePage() {
           ) : (
             <div className="grid grid-cols-2 gap-3">
               {foundPlants.map((plant) => (
-                <Card key={plant.id} size="sm" className="gap-3">
-                  {plant.image_base64 ? (
-                    <img
-                      src={plant.image_base64}
-                      alt=""
-                      className="mx-4 h-20 rounded-2xl object-cover"
-                    />
-                  ) : (
-                    <div
-                      className="mx-4 h-20 rounded-2xl bg-muted"
-                      aria-hidden
-                    />
-                  )}
-                  <CardHeader className="gap-1">
-                    <CardTitle className="leading-tight">
-                      {plant.common_name}
-                    </CardTitle>
-                    <CardDescription className="italic">
-                      {plant.scientific_name}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex items-center justify-between gap-2">
-                    {plant.rarity ? (
-                      <Badge variant={RARITY_VARIANT[plant.rarity]}>
-                        {plant.rarity}
-                      </Badge>
-                    ) : (
-                      <span />
-                    )}
-                    <span className="text-xs text-muted-foreground">
-                      {plant.found_on}
-                    </span>
-                  </CardContent>
-                </Card>
+                <FoundPlantComponent
+                  key={plant.id}
+                  id={plant.id}
+                  imageBase64={plant.image_base64}
+                  commonName={plant.common_name}
+                  scientificName={plant.scientific_name}
+                  rarity={plant.rarity as PlantRarity}
+                  foundOn={plant.found_on}
+                />
               ))}
             </div>
           )}

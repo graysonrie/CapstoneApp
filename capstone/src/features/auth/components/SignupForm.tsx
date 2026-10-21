@@ -1,12 +1,7 @@
 "use client";
 
 import { Lock, Mail } from "lucide-react";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import {
   InputGroup,
   InputGroupAddon,
@@ -30,7 +25,8 @@ export default function SignupForm() {
 
   return (
     <motion.div
-      className=""
+      // pt-4 lines the input boxes up w/ those of the login form
+      className="pt-4"
       initial={{ scale: 0.8 }}
       animate={{ scale: 1 }}
       transition={TRANSITION1}
