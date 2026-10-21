@@ -1,4 +1,4 @@
-import { Inter, Fredoka, Tangerine } from "next/font/google";
+import { Inter, Fredoka, Tangerine, Fira_Sans } from "next/font/google";
 import type { Viewport } from "next";
 import "./globals.css";
 import { QueryProvider } from "@/components/QueryProvider";
@@ -15,6 +15,12 @@ const tangerine = Fredoka({
 const manropeHeading = Fredoka({
   subsets: ["latin"],
   variable: "--font-heading",
+});
+
+const firaSans = Fira_Sans({
+  subsets: ["latin"],
+  variable: "--font-title",
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
@@ -42,6 +48,7 @@ export default function RootLayout({
         inter.variable,
         manropeHeading.variable,
         tangerine.variable,
+        firaSans.variable,
       )}
       suppressHydrationWarning
     >
