@@ -1,4 +1,4 @@
-package com.grieger.capstone
+package com.grieger.leaffreak
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
