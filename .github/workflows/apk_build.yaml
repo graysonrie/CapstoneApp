@@ -1,0 +1,64 @@
+name: Android Debug APK
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: capstone
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: capstone/package.json
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: capstone/pnpm-lock.yaml
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: >
+            aarch64-linux-android
+            armv7-linux-androideabi
+            x86_64-linux-android
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android
+        uses: android-actions/setup-android@v4
+
+      - name: Install Android SDK/NDK
+        run: |
+            android sdk install platform-tools
+            android sdk install platforms/android-35
+            android sdk install build-tools/35.0.0
+            android sdk install ndk
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build APK
+        run: pnpm tauri android build --debug --apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-apk
+          path: capstone/src-tauri/gen/android/app/build/outputs/apk/**/*.apk
