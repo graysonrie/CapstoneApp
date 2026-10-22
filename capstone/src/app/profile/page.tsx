@@ -134,14 +134,14 @@ export default function ProfilePage() {
         </div>
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-heading text-lg font-medium">Found plants</h2>
+          <h2 className="font-heading text-lg font-medium">Recent finds</h2>
           {foundPlants.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               Scan a plant to start your collection.
             </p>
           ) : (
             <div className="grid grid-cols-2 gap-3">
-              {foundPlants.map((plant) => (
+              {foundPlants.slice(0, 4).map((plant) => (
                 <FoundPlantComponent
                   key={plant.id}
                   id={plant.id}

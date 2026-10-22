@@ -8,7 +8,7 @@ import FoundPlantComponent from "@/features/profile/components/FoundPlantCompone
 import { getProfile } from "@/generated";
 import { TRANSITION1 } from "@/types/motionConstants";
 import { useQuery } from "@tanstack/react-query";
-import { HomeIcon, Search, Sprout, X } from "lucide-react";
+import { ArrowBigLeft, Search, Sprout, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { CollectionPlant } from "@/features/plant_scan/types";
@@ -41,13 +41,13 @@ export default function PlantCollectionPage() {
             <PointGridBg/>
             <div className="sticky top-4 z-20 mx-auto flex w-full max-w-md items-center gap-3 px-4">
                 <AnimatedButton
-                href="/home"
+                href="/profile"
                 size="icon"
                 variant="defaultGlass"
                 className="size-16 shrink-0 rounded-full"
                 aria-label="Home"
                 >
-                    <HomeIcon className="size-8" />
+                    <ArrowBigLeft className="size-8" />
                 </AnimatedButton>
                 <div className="relative min-w-0 flex-1">
                     <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2" />
