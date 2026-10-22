@@ -89,6 +89,18 @@ export interface CollectionPlant {
   image_base64: string | null;
 }
 
+export interface ImageGeolocation {
+  latitude: number;
+  longitude: number;
+}
+
+export interface UserPlantImageLocation {
+  image_id: number;
+  common_name: string;
+  location?: ImageGeolocation;
+  thumbnail_data_url?: string;
+}
+
 export interface ProfileRank {
   level: number;
   name: string;

@@ -1,6 +1,7 @@
 import { Inter, Fredoka, Tangerine, Fira_Sans } from "next/font/google";
 import type { Viewport } from "next";
 import "./globals.css";
+import "@maptiler/sdk/dist/maptiler-sdk.css";
 import { QueryProvider } from "@/components/QueryProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";

@@ -27,7 +27,7 @@ import { Progress } from "@/components/ui/progress";
 import { useLogoutMutation } from "@/features/auth/hooks/useAuthMutations";
 import { chronoUtcDateTimeToUserFriendlyFormat } from "@/lib/utils";
 import { TRANSITION1 } from "@/types/motionConstants";
-import { HomeIcon } from "lucide-react";
+import { HomeIcon, MapIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { getProfile } from "@/generated";
@@ -63,7 +63,7 @@ export default function ProfilePage() {
   return (
     <>
       <PointGridBg />
-      <div className="sticky top-4 left-4 z-20 self-start">
+      <div className="sticky top-4 z-20 flex w-full items-start justify-between px-4">
         <AnimatedButton
           href="/home"
           size="icon"
@@ -72,6 +72,14 @@ export default function ProfilePage() {
           aria-label="Home"
         >
           <HomeIcon className="size-8" />
+        </AnimatedButton>
+        <AnimatedButton
+          href="/map"
+          size="icon" 
+          variant="defaultGlass"
+          className="size-16 rounded-full"
+        >
+          <MapIcon className="size-8"/>
         </AnimatedButton>
       </div>
 

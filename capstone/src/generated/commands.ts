@@ -57,3 +57,7 @@ export async function scanPlant(params: types.ScanPlantParams): Promise<types.Sc
 export async function signUp(params: types.SignUpParams): Promise<void> {
   return invoke('sign_up', params);
 }
+
+export async function getUserImageLocations(): Promise<types.UserPlantImageLocation[]> {
+  return invoke('get_user_image_locations');
+}
