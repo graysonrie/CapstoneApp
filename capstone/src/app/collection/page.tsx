@@ -8,11 +8,50 @@ import FoundPlantComponent from "@/features/profile/components/FoundPlantCompone
 import { getProfile } from "@/generated";
 import { TRANSITION1 } from "@/types/motionConstants";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowBigLeft, Search, Sprout, X } from "lucide-react";
+import { ArrowBigLeft, Search, Sprout, X, ArrowUpDown } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { CollectionPlant } from "@/features/plant_scan/types";
 import { Card } from "@/components/ui/card";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+
+const SORT_OPTIONS = [
+    { value: "newest", label: "Newest first" },
+    { value: "oldest", label: "Oldest first" },
+    { value: "name", label: "Name (A–Z)" },
+] as const;
+
+type SortOption = (typeof SORT_OPTIONS)[number]["value"];
+
+function CollectionSortMenu({ value, onChange }: { value: SortOption; onChange: (v: SortOption) => void }) {
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <AnimatedButton variant="defaultGlass" size="icon" aria-label="Sort plants">
+                    <ArrowUpDown className="size-6"/>
+                </AnimatedButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-auto">
+                <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                <DropdownMenuRadioGroup value={value} onValueChange={(v) => onChange(v as SortOption)}>
+                    {SORT_OPTIONS.map((o) => (
+                        <DropdownMenuRadioItem key={o.value} value={o.value}>
+                            {o.label}
+                        </DropdownMenuRadioItem>
+                    ))}
+                </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    )
+}
 
 
 export default function PlantCollectionPage() {
@@ -34,7 +73,13 @@ export default function PlantCollectionPage() {
         plant.scientific_name.toLowerCase().includes(searchFilter.trim().toLowerCase())
     )
 
-    const filteredPlants = foundPlants.filter(applyPlantFilter)
+    const [sort, setSort] = useState<SortOption>("newest")
+
+    const filteredPlants = foundPlants.filter(applyPlantFilter).sort((a, b) => {
+        if (sort === "name") return a.common_name.localeCompare(b.common_name)
+        const diff = new Date(a.found_on).getTime() - new Date(b.found_on).getTime()
+        return sort === "oldest" ? diff : -diff
+    })
 
     return (
         <>
@@ -49,26 +94,11 @@ export default function PlantCollectionPage() {
                 >
                     <ArrowBigLeft className="size-8" />
                 </AnimatedButton>
-                <div className="relative min-w-0 flex-1">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2" />
-                    <Input 
-                    className="pl-10 pr-10"
-                    aria-label="Search plants" 
-                    placeholder="Search for fav plant :)"
-                    value={searchFilter}
-                    onChange={(e) => setSearchFilter(e.target.value)}
-                    />
-                    {searchFilter && (
-                        <button
-                        type="button"
-                        aria-label="Clear search"
-                        onClick={() => setSearchFilter("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground"
-                        >
-                            <X className="size-4" />
-                        </button>
-                    )}
+                <div className="flex flex-col gap-1 px-1">
+                    <h1 className="font-heading text-3xl font-semibold">My Collection</h1>
+                    <p className="text-sm text-muted-foreground">Every plant you&apos;ve discovered</p>
                 </div>
+                
             </div>
             <motion.div
                 className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-4 pb-8 pt-6"
@@ -76,9 +106,28 @@ export default function PlantCollectionPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={TRANSITION1}
             >
-                <div className="flex flex-col gap-1 px-1">
-                    <h1 className="font-heading text-3xl font-semibold">My Collection</h1>
-                    <p className="text-sm text-muted-foreground">Every plant you&apos;ve discovered</p>
+                <div className="flex max-w-md w-full">
+                    <div className="relative min-w-0 flex-1">
+                        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2" />
+                        <Input 
+                        className="pl-10 pr-10"
+                        aria-label="Search plants" 
+                        placeholder="Search for fav plant :)"
+                        value={searchFilter}
+                        onChange={(e) => setSearchFilter(e.target.value)}
+                        />
+                        {searchFilter && (
+                            <button
+                            type="button"
+                            aria-label="Clear search"
+                            onClick={() => setSearchFilter("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground"
+                            >
+                                <X className="size-4" />
+                            </button>
+                        )}
+                    </div>
+                    <CollectionSortMenu value={sort} onChange={setSort}/>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                     <StatTile label="Total Found" value={stats?.scans ?? 0}></StatTile>
