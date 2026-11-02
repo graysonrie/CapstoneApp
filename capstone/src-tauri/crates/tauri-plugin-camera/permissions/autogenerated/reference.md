@@ -5,6 +5,7 @@ Default permissions for the plugin
 #### This default permission set includes the following:
 
 - `allow-take-photo`
+- `allow-take-pending-photo`
 
 ## Permission Table
 
@@ -63,6 +64,32 @@ Enables the take_photo command without any pre-configured scope.
 <td>
 
 Denies the take_photo command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`camera:allow-take-pending-photo`
+
+</td>
+<td>
+
+Enables the take_pending_photo command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`camera:deny-take-pending-photo`
+
+</td>
+<td>
+
+Denies the take_pending_photo command without any pre-configured scope.
 
 </td>
 </tr>

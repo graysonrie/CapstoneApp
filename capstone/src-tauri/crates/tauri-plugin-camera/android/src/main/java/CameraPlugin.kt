@@ -1,6 +1,7 @@
 package com.plugin.camera
 
 import android.app.Activity
+import android.content.Context
 import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
@@ -16,8 +17,18 @@ import app.tauri.plugin.Plugin
 @TauriPlugin
 class CameraPlugin(private val activity: Activity): Plugin(activity) {
 
+    private companion object {
+        const val PREFS = "camera_plugin"
+        const val KEY_CAPTURING = "capturing_path"
+        const val KEY_COMPLETED = "completed_path"
+    }
+
+    // Persisted because the WebView/activity can be recreated while the camera app is open,
+    // which drops this instance's fields and the JS promise waiting for the result.
+    private val prefs by lazy { activity.getSharedPreferences(PREFS, Context.MODE_PRIVATE) }
+
     private var pendingInvoke: Invoke? = null
-    private var photoUri: Uri? = null
+    private var photoFile: java.io.File? = null
 
     private lateinit var cameraLauncher: ActivityResultLauncher<Uri>
 
@@ -33,31 +44,44 @@ class CameraPlugin(private val activity: Activity): Plugin(activity) {
         ) { success ->
 
             val invoke = pendingInvoke
+            val path = photoFile?.absolutePath ?: prefs.getString(KEY_CAPTURING, null)
             pendingInvoke = null
+            photoFile = null
 
-            if (success && photoUri != null) {
+            val editor = prefs.edit().remove(KEY_CAPTURING)
+            if (success && path != null) {
+                // Kept until consumed via takePendingPhoto, in case the page that
+                // asked for the photo no longer exists.
+                editor.putString(KEY_COMPLETED, path)
                 val result = JSObject()
-                result.put("path", photoUri.toString())
+                result.put("path", path)
                 invoke?.resolve(result)
             } else {
                 invoke?.reject("CANCELLED", "Photo capture was cancelled")
             }
-
-            photoUri = null
+            editor.apply()
         }
     }
 
     @Command
     fun takePhoto(invoke: Invoke) {
         try {
-            val uri = createPhotoUri()
+            val file = createPhotoFile()
+            val uri = FileProvider.getUriForFile(
+                activity,
+                "${activity.packageName}.fileprovider",
+                file
+            )
 
-            photoUri = uri
+            photoFile = file
             pendingInvoke = invoke
+            prefs.edit().putString(KEY_CAPTURING, file.absolutePath).apply()
 
             cameraLauncher.launch(uri)
 
         } catch (e: Exception) {
+            photoFile = null
+            pendingInvoke = null
             invoke.reject(
                 "CAMERA_ERROR",
                 e.message ?: "Unable to open camera"
@@ -65,17 +89,23 @@ class CameraPlugin(private val activity: Activity): Plugin(activity) {
         }
     }
 
-    private fun createPhotoUri(): Uri {
-        val file = java.io.File.createTempFile(
+    @Command
+    fun takePendingPhoto(invoke: Invoke) {
+        val path = prefs.getString(KEY_COMPLETED, null)
+        prefs.edit().remove(KEY_COMPLETED).apply()
+
+        val result = JSObject()
+        if (path != null && java.io.File(path).exists()) {
+            result.put("path", path)
+        }
+        invoke.resolve(result)
+    }
+
+    private fun createPhotoFile(): java.io.File {
+        return java.io.File.createTempFile(
             "photo_",
             ".jpg",
             activity.cacheDir
-        )
-
-        return FileProvider.getUriForFile(
-            activity,
-            "${activity.packageName}.fileprovider",
-            file
         )
     }
 }

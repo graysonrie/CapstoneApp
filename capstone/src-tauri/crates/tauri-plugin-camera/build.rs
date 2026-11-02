@@ -1,4 +1,4 @@
-const COMMANDS: &[&str] = &["take_photo"];
+const COMMANDS: &[&str] = &["take_photo", "take_pending_photo"];
 
 fn main() {
   tauri_plugin::Builder::new(COMMANDS)

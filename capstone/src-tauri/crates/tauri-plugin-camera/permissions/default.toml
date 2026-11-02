@@ -1,6 +1,6 @@
 [default]
 description = "Default permissions for the plugin"
-permissions = ["allow-take-photo"]
+permissions = ["allow-take-photo", "allow-take-pending-photo"]
 
 [[permission]]
 identifier = "allow-take-photo"

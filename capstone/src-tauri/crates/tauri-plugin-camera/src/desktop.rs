@@ -32,4 +32,8 @@ impl<R: Runtime> Camera<R> {
       ),
     }
   }
+
+  pub fn take_pending_photo(&self) -> crate::Result<Option<String>> {
+    Ok(None)
+  }
 }

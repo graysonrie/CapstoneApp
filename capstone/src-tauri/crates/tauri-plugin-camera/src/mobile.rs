@@ -29,4 +29,9 @@ impl<R: Runtime> Camera<R> {
     let response: PhotoResponse = self.0.run_mobile_plugin("takePhoto", ())?;
     Ok(response.path)
   }
+
+  pub fn take_pending_photo(&self) -> crate::Result<Option<String>> {
+    let response: PendingPhotoResponse = self.0.run_mobile_plugin("takePendingPhoto", ())?;
+    Ok(response.path)
+  }
 }

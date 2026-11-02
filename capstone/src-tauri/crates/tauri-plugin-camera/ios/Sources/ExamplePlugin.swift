@@ -3,6 +3,20 @@ import UIKit
 
 class CameraPlugin: Plugin, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
   private var pendingInvoke: Invoke?
+  private let completedPathKey = "camera_plugin.completed_path"
+
+  // Persisted because the WKWebView content process can be terminated while the camera is
+  // open; the page reloads and the JS promise waiting for the result is lost.
+  @objc public func takePendingPhoto(_ invoke: Invoke) {
+    let defaults = UserDefaults.standard
+    let path = defaults.string(forKey: completedPathKey)
+    defaults.removeObject(forKey: completedPathKey)
+    if let path = path, FileManager.default.fileExists(atPath: path) {
+      invoke.resolve(["path": path])
+    } else {
+      invoke.resolve([:])
+    }
+  }
 
   @objc public func takePhoto(_ invoke: Invoke) {
     let usageDescription =
@@ -55,6 +69,7 @@ class CameraPlugin: Plugin, UIImagePickerControllerDelegate, UINavigationControl
       .appendingPathComponent("photo_\(UUID().uuidString).jpg")
     do {
       try data.write(to: url)
+      UserDefaults.standard.set(url.path, forKey: completedPathKey)
       pendingInvoke?.resolve(["path": url.path])
     } catch {
       pendingInvoke?.reject(error.localizedDescription, code: "CAMERA_ERROR")
