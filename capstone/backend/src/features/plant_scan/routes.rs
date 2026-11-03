@@ -1,6 +1,6 @@
 use crate::features::auth::middleware::{AuthenticatedUser, require_auth};
 use crate::prelude::*;
-use axum::extract::Multipart;
+use axum::extract::{DefaultBodyLimit, Multipart};
 
 use super::errors::PlantScanHttpError;
 use super::service;
@@ -9,7 +9,10 @@ const MAX_IMAGE_BYTES: usize = 10 * 1024 * 1024;
 
 pub fn plant_scan_router(state: AppState) -> Router<AppState> {
     Router::new()
-        .route("/plant-scan", post(scan_plant))
+        .route(
+            "/plant-scan",
+            post(scan_plant).layer(DefaultBodyLimit::max(MAX_IMAGE_BYTES)),
+        )
         .route("/plant-image-locations", get(plant_image_locations))
         .route("/home", get(home))
         .route_layer(axum::middleware::from_fn_with_state(state, require_auth))
