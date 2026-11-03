@@ -27,3 +27,5 @@ testuser@test.com
 password
 
 by the way to reliably run prod build of Tauri app on ios do `pnpm tauri ios build --open` otherwise it goes nuts
+
+To get the iPhone app to communicate with the backend, run it with `APP__server__host=0.0.0.0 APP_ALLOW_INSECURE_DEV=1 cargo run`
