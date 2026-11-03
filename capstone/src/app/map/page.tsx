@@ -21,6 +21,10 @@ const mapModes: Array<MapLayerConfig> = [
     {id: "heatmap", label: "Heatmap", icon: Flame}
 ]
 
+// Survives React Strict Mode's remount so the WebGL map is created once.
+const mapHost = typeof document === "undefined" ? null : document.createElement("div");
+let mapSingleton: maptiler.Map | null = null;
+
 export default function MapPage() {
 
     const mapContainer = useRef<HTMLDivElement>(null);
@@ -57,36 +61,55 @@ export default function MapPage() {
     }
 
     useEffect(() => {
-        if (!mapContainer.current) return
-        maptiler.config.apiKey = "tPVHaTQyrPlxoSSHXp5D"
-        map.current = new maptiler.Map({
-            container: mapContainer.current,
-            style: "hybrid-v4",
-            center: [0, 0],
-            zoom: 12,
-            minZoom: 2,
-            maxZoom: 18
-        })
-        setMapInstance(map.current)
+        const container = mapContainer.current;
+        if (!container || !mapHost) return;
 
+        // Strict Mode detaches the React node and mounts a new one. Keep the
+        // canvas on a stable element so iOS does not build a second WebGL map.
+        mapHost.className = "h-full w-full touch-none";
+        container.appendChild(mapHost);
+
+        if (!mapSingleton) {
+            maptiler.config.apiKey = "tPVHaTQyrPlxoSSHXp5D";
+            mapSingleton = new maptiler.Map({
+                container: mapHost,
+                style: "hybrid-v4",
+                center: [0, 0],
+                zoom: 12,
+                minZoom: 2,
+                maxZoom: 18,
+            });
+        }
+
+        map.current = mapSingleton;
+        setMapInstance(mapSingleton);
+
+        let cancelled = false;
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 ({ coords }) => {
+                    if (cancelled) return;
                     const coordinates: [number, number] = [coords.longitude, coords.latitude];
                     setUserLocation(coordinates);
                 },
                 (error) => {
+                    if (cancelled) return;
                     console.error("Unable to get user location:", error);
-                }
-            )
+                },
+            );
         }
-
-        console.log(imageLocations)
 
         return () => {
-            map.current?.remove()
-            map.current = null
-        }
+            cancelled = true;
+            window.setTimeout(() => {
+                if (container.isConnected || mapHost.parentElement !== container) return;
+                mapSingleton?.remove();
+                mapSingleton = null;
+                map.current = null;
+                setMapInstance(null);
+                mapHost.remove();
+            }, 0);
+        };
     }, [])
 
     useEffect(() => {
@@ -218,7 +241,7 @@ export default function MapPage() {
     return (
         <div className="fixed inset-x-0 top-[env(safe-area-inset-top)] bottom-[calc(7rem+max(1rem,env(safe-area-inset-bottom)))]">
             <PointGridBg/>
-            <div ref={mapContainer} className="absolute inset-0 h-full w-full" />
+            <div ref={mapContainer} className="absolute inset-0 h-full w-full touch-none" />
             <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/25" />
 
             <header className="absolute inset-x-4 top-4 z-10 flex items-center gap-3">

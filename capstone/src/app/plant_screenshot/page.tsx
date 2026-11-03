@@ -9,6 +9,8 @@ import { scanPlant } from "@/generated";
 import { TRANSITION1 } from "@/types/motionConstants";
 import { motion } from "motion/react";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { takePendingPhoto } from "@/lib/camera";
 
 export default function PlantScreenshotPage() {
   const router = useRouter();
@@ -32,8 +34,16 @@ export default function PlantScreenshotPage() {
       return;
     }
     if (!pendingImagePath) {
-      router.replace(previousPath || "/home");
-      return;
+      let cancelled = false;
+      takePendingPhoto().then((path) => {
+        if (cancelled || path) {
+          return;
+        }
+        router.replace(useScanStore.getState().previousPath || "/home");
+      });
+      return () => {
+        cancelled = true;
+      };
     }
     if (!markScanStarted()) {
       return;
@@ -51,7 +61,14 @@ export default function PlantScreenshotPage() {
         queryClient.invalidateQueries({ queryKey: ["profile"] });
       })
       .catch((err) => {
+        const message =
+          typeof err === "string"
+            ? err
+            : err instanceof Error
+              ? err.message
+              : "Unknown error";
         console.warn("plant scan failed", err);
+        toast.error(`Plant scan failed: ${message}`);
         clearPending();
         router.replace(previousPath || "/home");
       })

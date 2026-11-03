@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import ScanOnlyMobileNavBar from "@/components/mobile-nav-bar/ScanOnlyMobileNavBar";
+import ResumePendingScan from "@/components/ResumePendingScan";
 
 const tangerine = Fredoka({
   subsets: ["latin"],
@@ -61,6 +62,7 @@ export default function RootLayout({
               {children}
             </div>
             <ScanOnlyMobileNavBar />
+            <ResumePendingScan />
             <Toaster />
           </QueryProvider>
         </ThemeProvider>

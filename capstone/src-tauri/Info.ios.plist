@@ -4,5 +4,7 @@
 <dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Take photos of plants to identify them and earn XP.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Show where you are on the plant map and center the map on your location.</string>
 </dict>
 </plist>
