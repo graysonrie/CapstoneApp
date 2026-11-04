@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "tauri-template",
+        "title": "LeafFreak",
         "width": 390,
         "height": 844,
         "minWidth": 320,
