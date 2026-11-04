@@ -78,6 +78,13 @@ export default function MapPage() {
                 zoom: 12,
                 minZoom: 2,
                 maxZoom: 18,
+                pixelRatio: Math.min(window.devicePixelRatio, 2),
+                fadeDuration: 0,
+                navigationControl: false,
+                geolocateControl: false,
+                terrainControl: false,
+                fullscreenControl: false,
+                scaleControl: false,
             });
         }
 
@@ -96,6 +103,7 @@ export default function MapPage() {
                     if (cancelled) return;
                     console.error("Unable to get user location:", error);
                 },
+                { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 },
             );
         }
 
@@ -242,20 +250,20 @@ export default function MapPage() {
         <div className="fixed inset-x-0 top-[env(safe-area-inset-top)] bottom-[calc(7rem+max(1rem,env(safe-area-inset-bottom)))]">
             <PointGridBg/>
             <div ref={mapContainer} className="absolute inset-0 h-full w-full touch-none" />
-            <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/25" />
+            
 
             <header className="absolute inset-x-4 top-4 z-10 flex items-center gap-3">
                     <AnimatedButton
                     href="/profile"
                     size="icon"
                     variant="defaultGlass"
-                    className="size-12 rounded-full border-white/60 bg-white/75 text-foreground shadow-lg backdrop-blur-xl"
+                    className="size-12 rounded-full border-white/60 bg-white/75 text-foreground shadow-lg"
                     aria-label="Back to home"
                     >
                     <ArrowLeft className="size-5" />
                     </AnimatedButton>
 
-                <div className="flex min-w-0 items-center gap-3 rounded-full border border-white/60 bg-white/80 py-2 pl-2.5 pr-5 shadow-lg backdrop-blur-xl">
+                <div className="flex min-w-0 items-center gap-3 rounded-full border border-white/60 bg-white/80 py-2 pl-2.5 pr-5 shadow-lg">
                     <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
                         <Sprout className="size-5" aria-hidden />
                     </span>
@@ -273,7 +281,7 @@ export default function MapPage() {
                             type="button"
                             size="icon"
                             variant="defaultGlass"    
-                            className="size-12 rounded-full border-white/60 bg-white/85 text-foreground shadow-xl backdrop-blur-xl disabled:opacity-60"
+                            className="size-12 rounded-full border-white/60 bg-white/85 text-foreground shadow-xl disabled:opacity-60"
                             title={mode.label}
                         > 
                             <mode.icon className="size-6"/>
@@ -295,7 +303,7 @@ export default function MapPage() {
                                 }}
                                 size="icon"
                                 variant="defaultGlass"
-                                className="size-12 rounded-full border-white/60 bg-white/85 text-foreground shadow-xl backdrop-blur-xl disabled:opacity-60"
+                                className="size-12 rounded-full border-white/60 bg-white/85 text-foreground shadow-xl disabled:opacity-60"
                                 title={c.label}
                                 aria-label={c.label}
                             >
@@ -310,7 +318,7 @@ export default function MapPage() {
                     disabled={!userLocation}
                     size="icon"
                     variant="defaultGlass"
-                    className="size-12 rounded-full border-white/60 bg-white/85 text-foreground shadow-xl backdrop-blur-xl disabled:opacity-60"
+                    className="size-12 rounded-full border-white/60 bg-white/85 text-foreground shadow-xl disabled:opacity-60"
                     aria-label="Center map on your location"
                     title="Center on your location"
                 >
