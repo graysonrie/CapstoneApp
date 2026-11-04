@@ -22,6 +22,10 @@ export async function getHome(): Promise<types.HomeResponse> {
   return invoke('get_home');
 }
 
+export async function getPlantScan(params: types.GetPlantScanParams): Promise<types.PlantScan> {
+  return invoke('get_plant_scan', params);
+}
+
 export async function getProfile(): Promise<types.ProfileResponse> {
   return invoke('get_profile');
 }

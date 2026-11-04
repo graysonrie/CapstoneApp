@@ -15,8 +15,8 @@ use crate::prelude::*;
 use base64::Engine;
 use exif::{In, Tag, Value};
 use server_types::plant_scan::responses::{
-    CollectionPlant, DailyMatch, DailyPlantQuest, HomeResponse, ImageGeolocation, ProfileRank,
-    ProfileResponse, ProfileStats, Rarity, UserPlantImageLocation,
+    CollectionPlant, DailyMatch, DailyPlantQuest, HomeResponse, ImageGeolocation, PlantScan,
+    ProfileRank, ProfileResponse, ProfileStats, Rarity, UserPlantImageLocation,
 };
 use std::io::Cursor;
 
@@ -139,6 +139,7 @@ pub async fn scan_plant_image(
         rarity,
         today,
         Some(relative_path),
+        &scan,
     )
     .await?;
 
@@ -155,6 +156,22 @@ pub async fn scan_plant_image(
         daily_match,
         leveled_up,
     })
+}
+
+pub async fn retrieve_find(
+    db: &DatabaseConnection,
+    user_id: UserIdType,
+    plant_id: i32,
+) -> Result<PlantScan, PlantScanError> {
+    let find = repo::find_by_id(db, user_id, plant_id)
+        .await?
+        .ok_or(PlantScanError::NotFound)?;
+    let scan_response = find
+        .scan_response
+        .as_deref()
+        .ok_or(PlantScanError::ScanResponseNotFound)?;
+    serde_json::from_str(scan_response)
+        .map_err(|error| PlantScanError::InvalidStoredResponse(error.to_string()))
 }
 
 async fn apply_xp(

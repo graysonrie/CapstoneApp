@@ -291,6 +291,19 @@ pub async fn scan_plant(
     })
 }
 
+#[tauri::command(rename_all = "camelCase")]
+pub async fn get_plant_scan(
+    api: BackendApiState<'_>,
+    plant_id: i32,
+) -> Result<server_types::plant_scan::responses::PlantScan, String> {
+    let inner: &Arc<ApiClient> = api.inner();
+    inner
+        .plant_scan_client()
+        .find_by_id(plant_id)
+        .await
+        .map_err(|e| e.user_message())
+}
+
 #[tauri::command]
 pub async fn get_home(
     api: BackendApiState<'_>,

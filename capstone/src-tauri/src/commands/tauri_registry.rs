@@ -12,6 +12,7 @@ pub fn invoke_handler() -> impl Fn(tauri::ipc::Invoke) -> bool + Send + Sync + '
         request_password_reset,
         confirm_password_reset,
         scan_plant,
+        get_plant_scan,
         get_home,
         get_profile,
         get_user_image_locations

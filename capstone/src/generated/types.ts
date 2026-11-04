@@ -9,6 +9,7 @@
 
 export type {
   HomeResponse,
+  PlantScan,
   UserPlantImageLocation,
   ProfileResponse,
   ScanPlantPayload,
@@ -25,6 +26,11 @@ export interface CompleteProfileParams {
   firstName: string;
   lastName: string;
   usageIntent: string;
+  [key: string]: unknown;
+}
+
+export interface GetPlantScanParams {
+  plantId: number;
   [key: string]: unknown;
 }
 

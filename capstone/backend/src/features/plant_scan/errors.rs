@@ -10,10 +10,16 @@ pub enum PlantScanError {
     ImageTooLarge,
     #[error("the image does not contain a recognizable plant")]
     NotAPlant,
+    #[error("plant find was not found")]
+    NotFound,
+    #[error("plant scan response was not found")]
+    ScanResponseNotFound,
     #[error("openai request failed: {0}")]
     OpenAi(String),
     #[error("failed to parse plant identification")]
     InvalidModelResponse,
+    #[error("stored plant scan response is invalid: {0}")]
+    InvalidStoredResponse(String),
     #[error(transparent)]
     Database(#[from] DbErr),
     #[error(transparent)]
@@ -38,13 +44,21 @@ impl From<PlantScanError> for PlantScanHttpError {
                 StatusCode::UNPROCESSABLE_ENTITY,
                 "could not identify a plant in that photo".into(),
             ),
+            PlantScanError::NotFound | PlantScanError::ScanResponseNotFound => {
+                (StatusCode::NOT_FOUND, "plant scan not found".into())
+            }
+            PlantScanError::InvalidStoredResponse(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "stored plant scan response is invalid".into(),
+            ),
             PlantScanError::InvalidModelResponse | PlantScanError::OpenAi(_) => (
                 StatusCode::BAD_GATEWAY,
                 "failed to analyze the plant".into(),
             ),
-            PlantScanError::Database(_) | PlantScanError::Storage(_) | PlantScanError::Io(_) => {
-                (StatusCode::INTERNAL_SERVER_ERROR, "internal server error".into())
-            }
+            PlantScanError::Database(_) | PlantScanError::Storage(_) | PlantScanError::Io(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "internal server error".into(),
+            ),
         };
         Self((status, msg))
     }

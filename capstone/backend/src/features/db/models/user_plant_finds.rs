@@ -61,6 +61,9 @@ pub struct Model {
 
     /// Relative path in file storage, e.g. `scans/{user_id}/{uuid}.jpg`
     pub image_path: Option<String>,
+
+    /// Serialized `PlantScan` response JSON.
+    pub scan_response: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

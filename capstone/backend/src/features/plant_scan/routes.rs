@@ -1,6 +1,6 @@
 use crate::features::auth::middleware::{AuthenticatedUser, require_auth};
 use crate::prelude::*;
-use axum::extract::{DefaultBodyLimit, Multipart};
+use axum::extract::{DefaultBodyLimit, Multipart, Path as AxumPath};
 
 use super::errors::PlantScanHttpError;
 use super::service;
@@ -13,9 +13,21 @@ pub fn plant_scan_router(state: AppState) -> Router<AppState> {
             "/plant-scan",
             post(scan_plant).layer(DefaultBodyLimit::max(MAX_IMAGE_BYTES)),
         )
+        .route("/plant-scan/{plant_id}", get(retrieve_find))
         .route("/plant-image-locations", get(plant_image_locations))
         .route("/home", get(home))
         .route_layer(axum::middleware::from_fn_with_state(state, require_auth))
+}
+
+async fn retrieve_find(
+    user: AuthenticatedUser,
+    State(state): State<AppState>,
+    AxumPath(plant_id): AxumPath<i32>,
+) -> Result<Json<PlantScan>, PlantScanHttpError> {
+    service::retrieve_find(&state.db, user.user_id, plant_id)
+        .await
+        .map(Json)
+        .map_err(PlantScanHttpError::from)
 }
 
 async fn plant_image_locations(
