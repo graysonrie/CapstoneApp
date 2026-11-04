@@ -45,7 +45,7 @@ export default function LoginPage() {
           {!signUp ? (
             <div className="flex w-full flex-col items-center gap-8 text-lg font-brand">
               <div className="flex flex-col items-center">
-                <p>New to PlantApp?</p>
+                <p>New to LeafFreak?</p>
                 <p
                   className="cursor-pointer text-xl font-semibold text-primary hover:underline"
                   onClick={() => setSignUp(true)}
