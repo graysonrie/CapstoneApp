@@ -11,7 +11,7 @@ import { PlantRarity } from "../types/profileTypes";
 import { getPlantScan } from "@/generated";
 import { useScanStore } from "@/features/plant_scan/store/useScanStore";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 interface Props {
   id: number;
@@ -28,7 +28,7 @@ const RARITY_VARIANT: Record<PlantRarity, "outline" | "secondary" | "default"> =
     Rare: "outline",
   };
 
-async function handlePlantClick(id: number, imageBase64: string | null, router: AppRouterInstance) {
+async function handlePlantClick(id: number, imageBase64: string | null, previousPath: string, router: AppRouterInstance) {
     const scan = await getPlantScan({
       plantId: id
     })
@@ -43,6 +43,8 @@ async function handlePlantClick(id: number, imageBase64: string | null, router: 
       },
       imageBase64 ?? "",
     )
+
+    useScanStore.getState().previousPath = previousPath
 
     router.replace("/plant_analysis")
 
@@ -59,9 +61,10 @@ export default function FoundPlantComponent({
 }: Props) {
 
   const router = useRouter()
+  const path = usePathname()
 
   return (
-    <Card key={id} size="sm" className="h-full gap-3 text-center" onClick={() => handlePlantClick(id, imageBase64, router)}>
+    <Card key={id} size="sm" className="h-full gap-3 text-center" onClick={() => handlePlantClick(id, imageBase64, path, router)}>
       <CardHeader className=" ">
         <CardTitle className="leading-tight">{commonName}</CardTitle>
         <CardDescription className="italic">{scientificName}</CardDescription>

@@ -13,7 +13,7 @@ import {
 import { useScanStore } from "@/features/plant_scan/store/useScanStore";
 import type { PlantRarity } from "@/features/plant_scan/types";
 import { TRANSITION1 } from "@/types/motionConstants";
-import { HomeIcon } from "lucide-react";
+import { ArrowBigLeft, HomeIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -51,13 +51,13 @@ export default function PlantAnalysisPage() {
       <PointGridBg />
       <div className="sticky top-4 left-4 z-20 self-start">
         <AnimatedButton
-          href="/home"
+          href={previousPath || "/home"}
           size="icon"
           variant="defaultGlass"
           className="size-16 rounded-full"
-          aria-label="Home"
+          aria-label="Back"
         >
-          <HomeIcon className="size-8" />
+          <ArrowBigLeft className="size-8" />
         </AnimatedButton>
       </div>
 
