@@ -12,8 +12,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useScanStore } from "@/features/plant_scan/store/useScanStore";
-import type { PlantRarity } from "@/features/plant_scan/types";
+import type { PlantGeoData, PlantRarity } from "@/features/plant_scan/types";
+import { getPlantGeoDistribution } from "@/generated";
 import { TRANSITION1 } from "@/types/motionConstants";
+import * as maptiler from "@maptiler/sdk";
 import {
   ArrowBigLeft,
   Droplets,
@@ -27,7 +29,7 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 const RARITY_VARIANT: Record<PlantRarity, "outline" | "secondary" | "default"> =
   {
@@ -185,6 +187,14 @@ export default function PlantAnalysisPage() {
             </CardContent>
           </Card>
 
+          {scientificName ? (
+            <PlantDistributionMap
+              key={scientificName}
+              scientificName={scientificName}
+              className="lg:col-span-2"
+            />
+          ) : null}
+
           {sections.care ? (
             <Card>
               <CardHeader>
@@ -314,6 +324,208 @@ export default function PlantAnalysisPage() {
         ) : null}
       </motion.main>
     </>
+  );
+}
+
+function PlantDistributionMap({
+  scientificName,
+  className,
+}: {
+  scientificName: string;
+  className?: string;
+}) {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const [observations, setObservations] = useState<PlantGeoData[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const points = useMemo(
+    () =>
+      observations.filter(
+        (
+          observation,
+        ): observation is PlantGeoData & {
+          decimalLatitude: number;
+          decimalLongitude: number;
+        } =>
+          observation.decimalLatitude != null &&
+          observation.decimalLongitude != null &&
+          Number.isFinite(observation.decimalLatitude) &&
+          Number.isFinite(observation.decimalLongitude) &&
+          Math.abs(observation.decimalLatitude) <= 90 &&
+          Math.abs(observation.decimalLongitude) <= 180,
+      ),
+    [observations],
+  );
+
+  useEffect(() => {
+    let active = true;
+
+    getPlantGeoDistribution({ scientificName })
+      .then((response) => {
+        if (!active) return;
+        setObservations(response.results);
+        setTotalCount(response.count);
+        console.log(response)
+      })
+      .catch((cause: unknown) => {
+        if (!active) return;
+        setError(
+          cause instanceof Error
+            ? cause.message
+            : typeof cause === "string"
+              ? cause
+              : "Could not load distribution data.",
+        );
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [scientificName]);
+
+  useEffect(() => {
+    const container = mapContainer.current;
+    if (isLoading || error || points.length === 0 || !container) return;
+
+    maptiler.config.apiKey = "tPVHaTQyrPlxoSSHXp5D";
+    const map = new maptiler.Map({
+      container,
+      style: "streets-v2",
+      center: [0, 15],
+      zoom: 0.8,
+      minZoom: 0,
+      maxZoom: 12,
+      navigationControl: false,
+      geolocateControl: false,
+      terrainControl: false,
+      fullscreenControl: false,
+      scaleControl: false,
+    });
+
+    const data: GeoJSON.FeatureCollection<GeoJSON.Point> = {
+      type: "FeatureCollection",
+      features: points.map((point) => ({
+        type: "Feature",
+        properties: {},
+        geometry: {
+          type: "Point",
+          coordinates: [point.decimalLongitude, point.decimalLatitude],
+        },
+      })),
+    };
+    const addHeatmap = () => {
+      maptiler.helpers.addHeatmap(map, {
+        data,
+        radius: 5,
+        intensity: 1.0,
+      });
+      setMapLoaded(true);
+    };
+
+    if (map.isStyleLoaded()) {
+      addHeatmap();
+    } else {
+      map.once("load", addHeatmap);
+    }
+
+    if (points.length === 1) {
+      map.setCenter([points[0].decimalLongitude, points[0].decimalLatitude]);
+      map.setZoom(3);
+    } else {
+      const west = Math.min(...points.map((point) => point.decimalLongitude));
+      const east = Math.max(...points.map((point) => point.decimalLongitude));
+      const south = Math.min(...points.map((point) => point.decimalLatitude));
+      const north = Math.max(...points.map((point) => point.decimalLatitude));
+      if (west === east && south === north) {
+        map.setCenter([west, south]);
+        map.setZoom(3);
+      } else {
+        const longitudePadding = west === east ? 0.1 : 0;
+        const latitudePadding = south === north ? 0.1 : 0;
+        map.fitBounds(
+          [
+            [
+              Math.max(-180, west - longitudePadding),
+              Math.max(-90, south - latitudePadding),
+            ],
+            [
+              Math.min(180, east + longitudePadding),
+              Math.min(90, north + latitudePadding),
+            ],
+          ],
+          { padding: 36, maxZoom: 5 },
+        );
+      }
+    }
+
+    return () => {
+      map.off("load", addHeatmap);
+      map.remove();
+    };
+  }, [error, isLoading, points]);
+
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <MapPin aria-hidden className="size-5 text-primary" />
+          Where it has been observed
+        </CardTitle>
+        <CardDescription>
+          GBIF occurrence records show reported observations, not the plant’s
+          exact native range.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div
+            className="flex h-64 items-center justify-center rounded-2xl bg-muted/60 text-sm text-muted-foreground"
+            role="status"
+          >
+            Loading observation data...
+          </div>
+        ) : error ? (
+          <div
+            className="flex h-64 items-center justify-center rounded-2xl bg-muted/60 px-5 text-center text-sm text-muted-foreground"
+            role="status"
+          >
+            Distribution data is unavailable right now: {error}
+          </div>
+        ) : points.length === 0 ? (
+          <div className="flex h-64 items-center justify-center rounded-2xl bg-muted/60 px-5 text-center text-sm text-muted-foreground">
+            No georeferenced observations were found for this identification.
+          </div>
+        ) : (
+          <>
+            <div className="relative overflow-hidden rounded-2xl">
+              <div
+                ref={mapContainer}
+                className="h-64 w-full bg-muted sm:h-80"
+                aria-label={`Heatmap of ${scientificName} observation records`}
+              />
+              {!mapLoaded ? (
+                <div
+                  className="pointer-events-none absolute inset-0 flex items-center justify-center bg-background/30 text-sm text-muted-foreground"
+                  role="status"
+                >
+                  Preparing map...
+                </div>
+              ) : null}
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Showing {points.length} mapped observations
+              {totalCount > points.length ? ` from ${totalCount} records` : ""}.
+            </p>
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

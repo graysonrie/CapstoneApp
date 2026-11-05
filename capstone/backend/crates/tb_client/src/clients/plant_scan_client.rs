@@ -67,4 +67,14 @@ impl<'a> PlantScanClient<'a> {
         let response = self.api.authenticated_request(request)?.send().await?;
         parse_json_response(response).await
     }
+
+    pub async fn get_plant_geo_distribution(&self, scientific_name: &str) -> ClientResult<GbifResponse> {
+        let request = self
+            .api
+            .http
+            .get(self.api.base_url.join(&format!("/plant-geo-distribution/{scientific_name}"))?.to_string());
+        let response = self.api.authenticated_request(request)?.send().await?;
+        parse_json_response(response).await
+    }
+
 }

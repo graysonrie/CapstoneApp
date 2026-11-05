@@ -162,3 +162,20 @@ pub struct ProfileResponse {
     pub stats: ProfileStats,
     pub found_plants: Vec<CollectionPlant>,
 }
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct GbifResponse {
+    pub results: Vec<PlantGeoData>,
+    pub count: u32,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct PlantGeoData {
+    pub species: String,
+
+    #[serde(rename = "decimalLatitude")]
+    pub latitude: Option<f64>,
+
+    #[serde(rename = "decimalLongitude")]
+    pub longitude: Option<f64>,
+}

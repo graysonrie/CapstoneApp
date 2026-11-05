@@ -16,7 +16,20 @@ pub fn plant_scan_router(state: AppState) -> Router<AppState> {
         .route("/plant-scan/{plant_id}", get(retrieve_find))
         .route("/plant-image-locations", get(plant_image_locations))
         .route("/home", get(home))
+        .route(
+            "/plant-geo-distribution/{scientific_name}",
+            get(get_plant_geo_distribution),
+        )
         .route_layer(axum::middleware::from_fn_with_state(state, require_auth))
+}
+
+async fn get_plant_geo_distribution(
+    AxumPath(scientific_name): AxumPath<String>,
+) -> Result<Json<GbifResponse>, PlantScanHttpError> {
+    service::get_plant_geo_distributition(&scientific_name)
+        .await
+        .map(Json)
+        .map_err(PlantScanHttpError::from)
 }
 
 async fn retrieve_find(

@@ -10,8 +10,10 @@ use crate::features::db::models::user::{
 };
 use crate::features::db::models::user_plant_finds::Rarity as DbRarity;
 use crate::features::file_storage::file_storage_trait::FileStorageStateType;
+use crate::features::plant_scan::daily;
 use crate::features::user;
 use crate::prelude::*;
+use async_openai::error::OpenAIError::Reqwest;
 use base64::Engine;
 use exif::{In, Tag, Value};
 use server_types::plant_scan::responses::{
@@ -343,6 +345,31 @@ pub async fn get_user_plant_image_locations(
     }
 
     Ok(image_locations)
+}
+
+pub async fn get_plant_geo_distributition(
+    scientific_name: &str,
+) -> Result<GbifResponse, PlantScanError> {
+    let mut url = reqwest::Url::parse("https://api.gbif.org/v1/occurrence/search")
+        .expect("static GBIF URL is valid");
+    url.query_pairs_mut()
+        .append_pair("scientificName", scientific_name)
+        .append_pair("hasCoordinate", "true")
+        .append_pair("limit", "300");
+
+    let resp = reqwest::Client::new()
+        .get(url)
+        .send()
+        .await
+        .map_err(|error| PlantScanError::OpenAi(error.to_string()))?;
+    let body = resp
+        .error_for_status()
+        .map_err(|error| PlantScanError::OpenAi(error.to_string()))?
+        .text()
+        .await
+        .map_err(|error| PlantScanError::OpenAi(error.to_string()))?;
+    
+    serde_json::from_str(&body).map_err(|error| PlantScanError::OpenAi(error.to_string()))
 }
 
 fn image_thumbnail_data_url(image_bytes: &[u8]) -> Option<String> {

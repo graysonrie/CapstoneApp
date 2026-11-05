@@ -48,6 +48,17 @@ export interface PlantScan {
   identification_notes: IdentificationNotes;
 }
 
+export interface PlantGeoData {
+  species: string;
+  decimalLatitude: number | null;
+  decimalLongitude: number | null;
+}
+
+export interface GbifResponse {
+  results: PlantGeoData[];
+  count: number;
+}
+
 export interface DailyMatch {
   key: string;
   common_name: string;

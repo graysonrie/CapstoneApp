@@ -339,3 +339,16 @@ pub async fn get_user_image_locations(
         .await
         .map_err(|e| e.user_message())
 }
+
+#[tauri::command]
+pub async fn get_plant_geo_distribution(
+    api: BackendApiState<'_>,
+    scientific_name: String,
+) -> Result<server_types::plant_scan::responses::GbifResponse, String> {
+    let inner: &Arc<ApiClient> = api.inner();
+    inner
+        .plant_scan_client()
+        .get_plant_geo_distribution(&scientific_name)
+        .await
+        .map_err(|e| e.user_message())
+}
