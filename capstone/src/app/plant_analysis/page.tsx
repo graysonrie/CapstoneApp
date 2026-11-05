@@ -7,6 +7,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -22,6 +23,7 @@ import {
   Sparkles,
   Sun,
   Thermometer,
+  TriangleAlert,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
@@ -270,6 +272,15 @@ export default function PlantAnalysisPage() {
                   <TextSection title="Pets" body={sections.toxicity.pets} />
                 ) : null}
               </CardContent>
+              <CardFooter>
+                <div className="w-full rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-950 dark:text-amber-100">
+                  <TextSection
+                  title="Warning"
+                  body="We took our best guess at identifying this plant, but mistakes can happen. Only handle and consume plants if you're certain they are safe."
+                  icon={<TriangleAlert className="size-5 text-amber-600 dark:text-amber-400" />}
+                  />
+                </div>
+              </CardFooter>
             </Card>
           ) : null}
         </div>
