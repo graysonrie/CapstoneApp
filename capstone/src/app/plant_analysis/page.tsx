@@ -13,10 +13,19 @@ import {
 import { useScanStore } from "@/features/plant_scan/store/useScanStore";
 import type { PlantRarity } from "@/features/plant_scan/types";
 import { TRANSITION1 } from "@/types/motionConstants";
-import { ArrowBigLeft, HomeIcon } from "lucide-react";
+import {
+  ArrowBigLeft,
+  Droplets,
+  Leaf,
+  MapPin,
+  PawPrint,
+  Sparkles,
+  Sun,
+  Thermometer,
+} from "lucide-react";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 
 const RARITY_VARIANT: Record<PlantRarity, "outline" | "secondary" | "default"> =
   {
@@ -45,168 +54,294 @@ export default function PlantAnalysisPage() {
   const { identification, summary, sections, identification_notes } = scan;
   const commonName = identification.common_name ?? "Unknown plant";
   const scientificName = identification.scientific_name ?? "";
+  const hasReward = xp_awarded > 0 || Boolean(daily_match) || leveled_up;
 
   return (
     <>
       <PointGridBg />
-      <div className="sticky top-4 left-4 z-20 self-start">
-        <AnimatedButton
-          href={previousPath || "/home"}
-          size="icon"
-          variant="defaultGlass"
-          className="size-16 rounded-full"
-          aria-label="Back"
-        >
-          <ArrowBigLeft className="size-8" />
-        </AnimatedButton>
-      </div>
-
-      <motion.div
-        className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-6 py-8"
-        initial={{ scale: 0.8 }}
-        animate={{ scale: 1 }}
+      <motion.main
+        className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col gap-5 px-4 py-5 sm:gap-6 sm:px-6 sm:py-8"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={TRANSITION1}
       >
-        {imageSrc ? (
-          <img
-            src={imageSrc}
-            alt={commonName}
-            className="h-56 w-full rounded-3xl object-cover"
-          />
-        ) : null}
+        <section className="relative isolate flex min-h-80 flex-col justify-end overflow-hidden rounded-4xl bg-gradient-to-br from-primary/30 via-secondary to-muted shadow-lg sm:min-h-[26rem]">
+          {imageSrc ? (
+            <img
+              src={imageSrc}
+              alt={`Photo of ${commonName}`}
+              className="absolute inset-0 z-0 size-full object-cover"
+            />
+          ) : (
+            <Leaf
+              aria-hidden
+              className="absolute inset-0 z-0 m-auto size-28 text-primary/35"
+            />
+          )}
+          <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-black/20 to-black/20" />
 
-        <header className="flex flex-col gap-2 text-center">
-          <h1 className="font-heading text-2xl font-medium">{commonName}</h1>
-          {scientificName ? (
-            <p className="italic text-muted-foreground">{scientificName}</p>
-          ) : null}
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {identification.rarity ? (
-              <Badge variant={RARITY_VARIANT[identification.rarity]}>
-                {identification.rarity}
+          <AnimatedButton
+            href={previousPath || "/home"}
+            size="icon"
+            variant="defaultGlass"
+            className="absolute left-4 top-4 z-20 size-12 rounded-full border-white/30 bg-black/20 text-white hover:bg-black/40 sm:left-5 sm:top-5"
+            aria-label="Back"
+          >
+            <ArrowBigLeft className="size-6" />
+          </AnimatedButton>
+
+          <div className="relative z-20 flex flex-col gap-3 p-5 text-white sm:p-8">
+            <div className="flex flex-wrap gap-2">
+              {identification.rarity ? (
+                <Badge
+                  variant={RARITY_VARIANT[identification.rarity]}
+                  className="border-white/30 bg-black/25 text-white backdrop-blur-sm"
+                >
+                  {identification.rarity}
+                </Badge>
+              ) : null}
+              <Badge className="border-white/30 bg-black/25 text-white backdrop-blur-sm">
+                {identification.confidence} confidence
               </Badge>
-            ) : null}
-            <Badge variant="outline">{identification.confidence} confidence</Badge>
+            </div>
+            <div>
+              <h1 className="font-heading text-3xl font-semibold leading-tight sm:text-5xl">
+                {commonName}
+              </h1>
+              {scientificName ? (
+                <p className="mt-1 text-base italic text-white/80 sm:text-lg">
+                  {scientificName}
+                </p>
+              ) : null}
+              {identification.family ? (
+                <p className="mt-2 text-sm text-white/75">
+                  {identification.family} family
+                </p>
+              ) : null}
+            </div>
           </div>
-        </header>
+        </section>
 
-        {daily_match ? (
+        {hasReward ? (
           <Card className="border-primary/40 bg-primary/10">
-            <CardHeader>
-              <CardTitle>Today&apos;s plant found!</CardTitle>
-              <CardDescription>
-                You found {daily_match.common_name}. +{xp_awarded} XP
-                {is_new_species ? " (includes new-species bonus)" : ""}.
-              </CardDescription>
-            </CardHeader>
+            <CardContent className="flex items-start gap-4 py-5">
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+                <Sparkles aria-hidden className="size-5" />
+              </span>
+              <div className="min-w-0">
+                <CardTitle>
+                  {daily_match ? "Daily plant discovered!" : "Scan rewards"}
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  {daily_match
+                    ? `You found ${daily_match.common_name}.`
+                    : is_new_species
+                      ? "A new species added to your collection."
+                      : "Your discovery has been added to your collection."}
+                  {xp_awarded > 0 ? ` +${xp_awarded} XP.` : ""}
+                  {is_new_species && daily_match
+                    ? " Includes the new-species bonus."
+                    : ""}
+                  {leveled_up ? " You leveled up!" : ""}
+                </CardDescription>
+              </div>
+            </CardContent>
           </Card>
         ) : null}
 
-        {xp_awarded > 0 && !daily_match ? (
-          <p className="text-center text-sm font-medium text-primary">
-            +{xp_awarded} XP{leveled_up ? " · You leveled up!" : ""}
-          </p>
-        ) : null}
-
-        {xp_awarded > 0 && daily_match && leveled_up ? (
-          <p className="text-center text-sm font-medium text-primary">
-            You leveled up!
-          </p>
-        ) : null}
-
-        <Card>
+        <Card className="border-primary/15">
           <CardHeader>
-            <CardTitle>Summary</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Leaf aria-hidden className="size-5 text-primary" />
+              At a glance
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">{summary}</p>
+            <p className="text-sm leading-7 text-muted-foreground sm:text-base">
+              {summary}
+            </p>
           </CardContent>
         </Card>
 
-        <FactCard title="Appearance" body={sections.appearance} />
-        {sections.native_range ? (
-          <FactCard title="Native range" body={sections.native_range} />
-        ) : null}
-
-        {sections.care ? (
+        <div className="grid gap-5 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Care</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Leaf aria-hidden className="size-5 text-primary" />
+                Plant profile
+              </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-2 text-sm text-muted-foreground">
-              {sections.care.light ? <p>Light: {sections.care.light}</p> : null}
-              {sections.care.watering ? (
-                <p>Water: {sections.care.watering}</p>
-              ) : null}
-              {sections.care.soil ? <p>Soil: {sections.care.soil}</p> : null}
-              {sections.care.temperature ? (
-                <p>Temperature: {sections.care.temperature}</p>
+            <CardContent className="flex flex-col gap-4">
+              <TextSection title="Appearance" body={sections.appearance} />
+              {sections.native_range ? (
+                <TextSection
+                  title="Native range"
+                  body={sections.native_range}
+                  icon={<MapPin aria-hidden className="size-4" />}
+                />
               ) : null}
             </CardContent>
           </Card>
-        ) : null}
 
-        {sections.interesting_facts.length > 0 ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Interesting facts</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="flex list-disc flex-col gap-2 pl-5 text-sm text-muted-foreground">
-                {sections.interesting_facts.map((fact) => (
-                  <li key={fact}>{fact}</li>
+          {sections.care ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sun aria-hidden className="size-5 text-primary" color="#df8e1d"/>
+                  Care guide
+                </CardTitle>
+                <CardDescription>
+                  Recommendations for helping this plant thrive
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-3 sm:grid-cols-2">
+                {sections.care.light ? (
+                  <CareItem
+                    icon={<Sun aria-hidden className="size-4" color="#df8e1d"/>}
+                    label="Light"
+                    body={sections.care.light}
+                  />
+                ) : null}
+                {sections.care.watering ? (
+                  <CareItem
+                    icon={<Droplets aria-hidden className="size-4" color="#1e66f5"/>}
+                    label="Water"
+                    body={sections.care.watering}
+                  />
+                ) : null}
+                {sections.care.soil ? (
+                  <CareItem
+                    icon={<Leaf aria-hidden className="size-4" color="#40a02b"/>}
+                    label="Soil"
+                    body={sections.care.soil}
+                  />
+                ) : null}
+                {sections.care.temperature ? (
+                  <CareItem
+                    icon={<Thermometer aria-hidden className="size-4" color="#e64553"/>}
+                    label="Temperature"
+                    body={sections.care.temperature}
+                  />
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {sections.interesting_facts.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles aria-hidden className="size-5 text-primary" />
+                  Interesting facts
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                {sections.interesting_facts.map((fact, index) => (
+                  <p
+                    key={`${index}-${fact}`}
+                    className="border-l-2 border-primary/40 pl-4 text-sm leading-6 text-muted-foreground"
+                  >
+                    {fact}
+                  </p>
                 ))}
-              </ul>
-            </CardContent>
-          </Card>
-        ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
 
-        {sections.toxicity ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Toxicity</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-2 text-sm text-muted-foreground">
-              {sections.toxicity.humans ? (
-                <p>Humans: {sections.toxicity.humans}</p>
-              ) : null}
-              {sections.toxicity.pets ? (
-                <p>Pets: {sections.toxicity.pets}</p>
-              ) : null}
-            </CardContent>
-          </Card>
-        ) : null}
+          {sections.toxicity ? (
+            <Card className="border-amber-500/25 bg-amber-500/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <PawPrint aria-hidden className="size-5 text-amber-600" />
+                  Toxicity &amp; safety
+                </CardTitle>
+                <CardDescription>
+                  Keep these notes in mind around people and pets
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4">
+                {sections.toxicity.humans ? (
+                  <TextSection
+                    title="People"
+                    body={sections.toxicity.humans}
+                  />
+                ) : null}
+                {sections.toxicity.pets ? (
+                  <TextSection title="Pets" body={sections.toxicity.pets} />
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
+        </div>
 
         {identification_notes.reasoning_summary ||
         identification_notes.uncertainty ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Identification notes</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-2 text-sm text-muted-foreground">
+          <details className="group rounded-3xl border border-border/70 bg-card/80 px-5 py-4 shadow-sm backdrop-blur-sm">
+            <summary className="cursor-pointer list-none font-heading text-base font-medium marker:hidden">
+              <span className="flex items-center justify-between gap-3">
+                How we identified this plant
+                <span className="text-sm text-muted-foreground transition-transform group-open:rotate-180">
+                  ↓
+                </span>
+              </span>
+            </summary>
+            <div className="mt-4 flex flex-col gap-4 border-t pt-4 text-sm leading-6 text-muted-foreground">
               {identification_notes.reasoning_summary ? (
-                <p>{identification_notes.reasoning_summary}</p>
+                <TextSection
+                  title="Reasoning"
+                  body={identification_notes.reasoning_summary}
+                />
               ) : null}
               {identification_notes.uncertainty ? (
-                <p>{identification_notes.uncertainty}</p>
+                <TextSection
+                  title="Uncertainty"
+                  body={identification_notes.uncertainty}
+                />
               ) : null}
-            </CardContent>
-          </Card>
+            </div>
+          </details>
         ) : null}
-      </motion.div>
+      </motion.main>
     </>
   );
 }
 
-function FactCard({ title, body }: { title: string; body: string }) {
+function TextSection({
+  title,
+  body,
+  icon,
+}: {
+  title: string;
+  body: string;
+  icon?: ReactNode;
+}) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground">{body}</p>
-      </CardContent>
-    </Card>
+    <section className="flex flex-col gap-1.5">
+      <h2 className="flex items-center gap-2 text-sm font-semibold">
+        {icon}
+        {title}
+      </h2>
+      <p className="text-sm leading-6 text-muted-foreground">{body}</p>
+    </section>
+  );
+}
+
+function CareItem({
+  icon,
+  label,
+  body,
+}: {
+  icon: ReactNode;
+  label: string;
+  body: string;
+}) {
+  return (
+    <div className="flex items-start gap-3 rounded-2xl bg-muted/60 p-3">
+      <span className="mt-0.5 shrink-0 text-primary">{icon}</span>
+      <div className="min-w-0">
+        <h2 className="text-sm font-semibold">{label}</h2>
+        <p className="mt-1 text-sm leading-5 text-muted-foreground">{body}</p>
+      </div>
+    </div>
   );
 }
