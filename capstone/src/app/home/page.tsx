@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Check, User, WifiOff } from "lucide-react";
+import { Check, Leaf, User, Users, WifiOff } from "lucide-react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -103,6 +103,17 @@ export default function HomePage() {
             </AlertDescription>
           </Alert>
         ) : null}
+
+        <nav aria-label="Explore plant finds" className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
+          <AnimatedButton href="/collection" variant="defaultGlass" className="h-14 w-full gap-2 text-md">
+            <Leaf aria-hidden className="size-5 text-primary" />
+            My Collection
+          </AnimatedButton>
+          <AnimatedButton href="/recent_finds" variant="defaultGlass" className="h-14 w-full gap-2 text-md">
+            <Users aria-hidden className="size-5 text-primary" />
+            Community Finds
+          </AnimatedButton>
+        </nav>
 
         <section className="flex flex-col gap-2">
           <div className="flex items-center justify-between text-sm">

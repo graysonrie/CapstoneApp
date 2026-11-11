@@ -86,7 +86,7 @@ export default function PlantCollectionPage() {
             <PointGridBg/>
             <div className="sticky top-4 z-20 mx-auto flex w-full max-w-md items-center gap-3 px-4">
                 <AnimatedButton
-                href="/profile"
+                href="/home"
                 size="icon"
                 variant="defaultGlass"
                 className="size-16 shrink-0 rounded-full"

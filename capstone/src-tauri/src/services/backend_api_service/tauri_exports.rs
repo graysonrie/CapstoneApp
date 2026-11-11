@@ -352,3 +352,18 @@ pub async fn get_plant_geo_distribution(
         .await
         .map_err(|e| e.user_message())
 }
+
+#[tauri::command]
+pub async fn get_recent_finds(
+    api: BackendApiState<'_>,
+    count: u64,
+    offset: u64,
+    user_exclude: Option<i32>,
+) -> Result<Vec<server_types::plant_scan::responses::RecentFind>, String> {
+    let inner: &Arc<ApiClient> = api.inner();
+    inner
+        .plant_scan_client()
+        .get_recent_finds(count, offset, user_exclude)
+        .await
+        .map_err(|e| e.user_message())
+}

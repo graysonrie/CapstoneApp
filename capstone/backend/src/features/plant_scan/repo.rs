@@ -2,12 +2,15 @@ use crate::features::db::models::user;
 use crate::features::db::models::user_plant_finds::{self, ActiveModel, Column, Entity, Rarity};
 use crate::prelude::*;
 use chrono::NaiveDate;
-use sea_orm::{QueryOrder, QuerySelect};
+use sea_orm::{IdenStatic, Iterable, QueryOrder, QuerySelect};
 use server_types::plant_scan::responses::PlantScan;
 
 #[derive(Debug, sea_orm::DerivePartialModel)]
 #[sea_orm(entity = "user::Entity")]
 pub struct RecentFindUser {
+    // A non-null column distinguishes an unnamed user from a missing joined row.
+    #[allow(dead_code)]
+    pub id: UserIdType,
     pub first_name: Option<String>,
     pub last_name: Option<String>,
 }
@@ -84,17 +87,30 @@ pub async fn list_recent(
 ) -> Result<Vec<(user_plant_finds::Model, Option<RecentFindUser>)>, DbErr> {
     let mut query = Entity::find()
         .find_also_related(user::Entity)
+        .select_only()
         .order_by_desc(Column::FoundOn)
         .order_by_desc(Column::Id)
         .offset(offset)
         .limit(count);
+
+    for column in Column::iter() {
+        query = query.column_as(column, format!("A_{}", column.as_str()));
+    }
+    for column in [
+        user::Column::Id,
+        user::Column::FirstName,
+        user::Column::LastName,
+    ] {
+        query = query.column_as(column, format!("B_{}", column.as_str()));
+    }
 
     if let Some(user_id) = user_exclude {
         query = query.filter(Column::UserId.ne(user_id));
     }
 
     query
-        .into_partial_model::<user_plant_finds::Model, RecentFindUser>()
+        .into_model::<user_plant_finds::Model, RecentFindUser>()
         .all(db)
         .await
 }
+

@@ -100,6 +100,12 @@ export interface CollectionPlant {
   image_base64: string | null;
 }
 
+export interface RecentFind {
+  find: CollectionPlant;
+  first_name: string | null;
+  last_name: string | null;
+}
+
 export interface ImageGeolocation {
   latitude: number;
   longitude: number;

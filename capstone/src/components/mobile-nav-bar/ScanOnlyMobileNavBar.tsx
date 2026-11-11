@@ -16,7 +16,9 @@ export default function ScanOnlyMobileNavBar() {
     pathname === "/login" ||
     pathname === "/reset-password" ||
     pathname === "/setup" ||
-    pathname === "/plant_screenshot";
+    pathname === "/plant_screenshot" ||
+    pathname === "/map" ||
+    pathname === "/recent_finds";
 
   if (hideScan) {
     return null;

@@ -68,6 +68,26 @@ impl<'a> PlantScanClient<'a> {
         parse_json_response(response).await
     }
 
+    pub async fn get_recent_finds(
+        &self,
+        count: u64,
+        offset: u64,
+        user_exclude: Option<i32>,
+    ) -> ClientResult<Vec<RecentFind>> {
+        let mut url = self.api.base_url.join("/recent-finds")?;
+        {
+            let mut query = url.query_pairs_mut();
+            query.append_pair("count", &count.to_string());
+            query.append_pair("offset", &offset.to_string());
+            if let Some(user_id) = user_exclude {
+                query.append_pair("user_exclude", &user_id.to_string());
+            }
+        }
+        let request = self.api.http.get(url);
+        let response = self.api.authenticated_request(request)?.send().await?;
+        parse_json_response(response).await
+    }
+
     pub async fn get_plant_geo_distribution(&self, scientific_name: &str) -> ClientResult<GbifResponse> {
         let request = self
             .api

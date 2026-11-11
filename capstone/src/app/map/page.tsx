@@ -247,7 +247,7 @@ export default function MapPage() {
     };
 
     return (
-        <div className="fixed inset-x-0 top-[env(safe-area-inset-top)] bottom-[calc(7rem+max(1rem,env(safe-area-inset-bottom)))]">
+        <div className="fixed inset-0 h-dvh w-screen overflow-hidden">
             <PointGridBg/>
             <div ref={mapContainer} className="absolute inset-0 h-full w-full touch-none" />
             
