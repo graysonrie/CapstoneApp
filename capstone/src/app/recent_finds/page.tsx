@@ -1,6 +1,7 @@
 "use client";
 
 import AnimatedButton from "@/components/generic/AnimatedButton";
+import ImageViewer from "@/components/generic/ImageViewer";
 import PointGridBg from "@/components/PointGridBg";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -31,13 +32,19 @@ function Find({ recentFind }: { recentFind: RecentFind }) {
       <div className="flex items-start gap-4 px-4">
         <div className="size-24 shrink-0 overflow-hidden rounded-2xl bg-muted sm:size-28">
           {find.image_base64 ? (
-            <Image
+            <ImageViewer
               src={find.image_base64}
               alt={`Photo of ${find.common_name}`}
-              className="size-full object-cover"
-              width={112}
-              height={112}
-            />
+              className="block size-full cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-foreground"
+            >
+              <Image
+                src={find.image_base64}
+                alt=""
+                className="size-full object-cover"
+                width={112}
+                height={112}
+              />
+            </ImageViewer>
           ) : (
             <div className="flex size-full items-center justify-center" aria-label="No plant photo available">
               <Leaf aria-hidden className="size-9 text-card-foreground/50" />

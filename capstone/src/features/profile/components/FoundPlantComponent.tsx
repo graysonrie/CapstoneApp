@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import ImageViewer from "@/components/generic/ImageViewer";
 import {
   Card,
   CardContent,
@@ -70,13 +71,21 @@ export default function FoundPlantComponent({
         <CardDescription className="italic">{scientificName}</CardDescription>
 
         {imageBase64 ? (
-          <Image
-            src={imageBase64}
-            alt=""
-            className="mx-auto mt-2 aspect-square w-full rounded-2xl object-cover"
-            width={160}
-            height={160}
-          />
+          <div className="mt-2" onClick={(event) => event.stopPropagation()}>
+            <ImageViewer
+              src={imageBase64}
+              alt={`Photo of ${commonName}`}
+              className="block aspect-square w-full overflow-hidden rounded-2xl cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+            >
+              <Image
+                src={imageBase64}
+                alt=""
+                className="size-full object-cover"
+                width={160}
+                height={160}
+              />
+            </ImageViewer>
+          </div>
         ) : (
           <div className="mt-2 aspect-square w-full rounded-2xl bg-muted" aria-hidden />
         )}

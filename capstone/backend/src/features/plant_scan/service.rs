@@ -422,7 +422,6 @@ pub async fn get_recent_finds(
         });
 
     }
-    println!("{recent_finds:?}");
     Ok(recent_finds)
 }
 
