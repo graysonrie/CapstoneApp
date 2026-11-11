@@ -378,6 +378,53 @@ pub async fn get_plant_geo_distributition(
     serde_json::from_str(&body).map_err(|error| PlantScanError::OpenAi(error.to_string()))
 }
 
+pub async fn get_recent_finds(
+    db: &DatabaseConnection,
+    storage: FileStorageStateType,
+    count: u64,
+    offset: u64,
+    user_exclude: Option<UserIdType>,
+) -> Result<Vec<RecentFind>, PlantScanError> {
+    let finds = repo::list_recent(db, count, offset, user_exclude).await?;
+
+    let mut recent_finds = Vec::new();
+    for (find, find_user) in finds {
+        let image_base64 = match find.image_path.as_deref() {
+            Some(path) => match storage.read_file_bytes(path).await {
+                Ok(bytes) => {
+                    let mime = image_mime_from_path(Path::new(path));
+                    Some(format!(
+                        "data:{mime};base64,{}",
+                        base64::engine::general_purpose::STANDARD.encode(bytes)
+                    ))
+                }
+                Err(err) => {
+                    tracing::warn!("failed to read scan image {path}: {err}");
+                    None
+                }
+            },
+            None => None,
+        };
+        let (first_name, last_name) = find_user
+            .map(|user| (user.first_name, user.last_name))
+            .unwrap_or_default();
+        recent_finds.push(RecentFind {
+            find: CollectionPlant {
+                id: find.id,
+                common_name: find.name.clone(),
+                scientific_name: find.scientific_name.clone(),
+                rarity: find.rarity.clone().map(Into::into),
+                found_on: format_found_on(find.found_on),
+                image_base64,
+            },
+            first_name,
+            last_name,
+        });
+
+    }
+    Ok(recent_finds)
+}
+
 fn image_thumbnail_data_url(image_bytes: &[u8]) -> Option<String> {
     let thumbnail = image::load_from_memory(image_bytes)
         .ok()?

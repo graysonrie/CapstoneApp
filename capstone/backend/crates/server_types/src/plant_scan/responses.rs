@@ -121,6 +121,13 @@ pub struct CollectionPlant {
     pub image_base64: Option<String>,
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct RecentFind {
+    pub find: CollectionPlant,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone, Copy)]
 pub struct ImageGeolocation {
     pub latitude: f64,

@@ -1,11 +1,18 @@
 use crate::features::auth::middleware::{AuthenticatedUser, require_auth};
 use crate::prelude::*;
-use axum::extract::{DefaultBodyLimit, Multipart, Path as AxumPath};
+use axum::extract::{DefaultBodyLimit, Multipart, Path as AxumPath, Query};
 
 use super::errors::PlantScanHttpError;
 use super::service;
 
 const MAX_IMAGE_BYTES: usize = 10 * 1024 * 1024;
+
+#[derive(Deserialize)]
+struct RecentFindsQuery {
+    count: u64,
+    offset: u64,
+    user_exclude: Option<UserIdType>,
+}
 
 pub fn plant_scan_router(state: AppState) -> Router<AppState> {
     Router::new()
@@ -20,6 +27,7 @@ pub fn plant_scan_router(state: AppState) -> Router<AppState> {
             "/plant-geo-distribution/{scientific_name}",
             get(get_plant_geo_distribution),
         )
+        .route("/recent-finds", get(get_recent_finds))
         .route_layer(axum::middleware::from_fn_with_state(state, require_auth))
 }
 
@@ -61,6 +69,22 @@ async fn home(
         .await
         .map(Json)
         .map_err(PlantScanHttpError::from)
+}
+
+async fn get_recent_finds(
+    State(state): State<AppState>,
+    Query(params): Query<RecentFindsQuery>,
+) -> Result<Json<Vec<RecentFind>>, PlantScanHttpError> {
+    service::get_recent_finds(
+        &state.db,
+        state.file_storage,
+        params.count,
+        params.offset,
+        params.user_exclude,
+    )
+    .await
+    .map(Json)
+    .map_err(PlantScanHttpError::from)
 }
 
 async fn scan_plant(

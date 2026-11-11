@@ -1,8 +1,16 @@
+use crate::features::db::models::user;
 use crate::features::db::models::user_plant_finds::{self, ActiveModel, Column, Entity, Rarity};
 use crate::prelude::*;
 use chrono::NaiveDate;
-use sea_orm::QueryOrder;
+use sea_orm::{QueryOrder, QuerySelect};
 use server_types::plant_scan::responses::PlantScan;
+
+#[derive(Debug, sea_orm::DerivePartialModel)]
+#[sea_orm(entity = "user::Entity")]
+pub struct RecentFindUser {
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+}
 
 pub async fn insert_find(
     db: &impl ConnectionTrait,
@@ -62,5 +70,31 @@ pub async fn find_by_id(
     Entity::find_by_id(plant_id)
         .filter(Column::UserId.eq(user_id))
         .one(db)
+        .await
+}
+
+/**
+ * List recent plant finds, passing in user_exclude to filter out a specific user's finds.
+ */
+pub async fn list_recent(
+    db: &impl ConnectionTrait,
+    count: u64,
+    offset: u64,
+    user_exclude: Option<UserIdType>,
+) -> Result<Vec<(user_plant_finds::Model, Option<RecentFindUser>)>, DbErr> {
+    let mut query = Entity::find()
+        .find_also_related(user::Entity)
+        .order_by_desc(Column::FoundOn)
+        .order_by_desc(Column::Id)
+        .offset(offset)
+        .limit(count);
+
+    if let Some(user_id) = user_exclude {
+        query = query.filter(Column::UserId.ne(user_id));
+    }
+
+    query
+        .into_partial_model::<user_plant_finds::Model, RecentFindUser>()
+        .all(db)
         .await
 }
