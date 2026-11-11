@@ -331,8 +331,14 @@ pub async fn get_user_plant_image_locations(
         let Some(image_path) = find.image_path.as_deref() else {
             continue;
         };
+
+        if !storage.file_exists(image_path).await? {
+            continue;
+        }
+
         let image_bytes = storage.read_file_bytes(image_path).await?;
         let location = read_image_geolocation(&image_bytes);
+        
         let thumbnail_data_url = location
             .as_ref()
             .and_then(|_| image_thumbnail_data_url(&image_bytes));
