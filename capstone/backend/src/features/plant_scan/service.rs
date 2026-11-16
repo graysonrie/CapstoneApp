@@ -425,6 +425,22 @@ pub async fn get_recent_finds(
     Ok(recent_finds)
 }
 
+pub async fn get_leaderboard(
+    db: &DatabaseConnection,
+) -> Result<Vec<LeaderboardUser>, PlantScanError> {
+    let users = repo::get_users_by_xp(db).await?;
+
+    let users = users.into_iter().map(|user| LeaderboardUser {
+        id: user.id,
+        first_name: user.first_name.unwrap_or_default(),
+        last_name: user.last_name.unwrap_or_default(),
+        xp: user.xp,
+        level: user.level,
+        rank_title: user.rank_title,
+    }).collect::<Vec<_>>();
+    Ok(users)
+}
+
 fn image_thumbnail_data_url(image_bytes: &[u8]) -> Option<String> {
     let thumbnail = image::load_from_memory(image_bytes)
         .ok()?

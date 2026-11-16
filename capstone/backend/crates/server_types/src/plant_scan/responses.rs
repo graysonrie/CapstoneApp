@@ -186,3 +186,13 @@ pub struct PlantGeoData {
     #[serde(rename = "decimalLongitude")]
     pub longitude: Option<f64>,
 }
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct LeaderboardUser {
+    pub id: i32,
+    pub first_name: String,
+    pub last_name: String,
+    pub xp: u32,
+    pub level: u32,
+    pub rank_title: String,
+}

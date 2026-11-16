@@ -28,6 +28,7 @@ pub fn plant_scan_router(state: AppState) -> Router<AppState> {
             get(get_plant_geo_distribution),
         )
         .route("/recent-finds", get(get_recent_finds))
+        .route("/leaderboard", get(get_leaderboard))
         .route_layer(axum::middleware::from_fn_with_state(state, require_auth))
 }
 
@@ -150,6 +151,14 @@ async fn scan_plant(
         &mime,
         &extension,
     )
+    .await
+    .map(Json)
+    .map_err(PlantScanHttpError::from)
+}
+
+async fn get_leaderboard(State(state): State<AppState>
+) -> Result<Json<Vec<LeaderboardUser>>, PlantScanHttpError> {
+    service::get_leaderboard(&state.db)
     .await
     .map(Json)
     .map_err(PlantScanHttpError::from)

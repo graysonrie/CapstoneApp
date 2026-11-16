@@ -114,3 +114,19 @@ pub async fn list_recent(
         .await
 }
 
+pub async fn get_users_by_xp(
+    db: &impl ConnectionTrait,
+) -> Result<Vec<user::Model>, DbErr> {
+    user::Entity::find()
+        .columns([
+            user::Column::Id,
+            user::Column::FirstName,
+            user::Column::LastName,
+            user::Column::Xp,
+            user::Column::Level,
+            user::Column::RankTitle,
+        ])
+        .order_by_desc(user::Column::Xp)
+        .all(db)
+        .await
+}
