@@ -12,6 +12,7 @@ import type { PlantScanResult } from "../features/plant_scan/types";
 export type {
   GbifResponse,
   HomeResponse,
+  LeaderboardUser,
   PlantScan,
   PlantScanResult,
   ProfileResponse,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Check, Leaf, User, Users, WifiOff } from "lucide-react";
+import { Check, Leaf, Trophy, User, Users, WifiOff } from "lucide-react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -58,7 +58,15 @@ export default function HomePage() {
   return (
     <>
       <PointGridBg />
-      <div className="sticky top-4 right-4 z-20 mr-4 self-end">
+      <div className="sticky top-4 z-20 flex w-full justify-between self-end px-4">
+        <AnimatedButton
+          href="/leaderboard"
+          size="icon"
+          variant="defaultGlass"
+          className="size-16 rounded-full"
+          aria-label="Leaderboard">
+          <Trophy className="size-7"/>
+        </AnimatedButton>
         <AnimatedButton
           href="/profile"
           size="icon"

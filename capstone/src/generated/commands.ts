@@ -22,6 +22,10 @@ export async function getHome(): Promise<types.HomeResponse> {
   return invoke('get_home');
 }
 
+export async function getLeaderboard(): Promise<types.LeaderboardUser[]> {
+  return invoke('get_leaderboard');
+}
+
 export async function getPlantGeoDistribution(params: types.GetPlantGeoDistributionParams): Promise<types.GbifResponse> {
   return invoke('get_plant_geo_distribution', params);
 }

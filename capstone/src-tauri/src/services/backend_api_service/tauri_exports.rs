@@ -367,3 +367,15 @@ pub async fn get_recent_finds(
         .await
         .map_err(|e| e.user_message())
 }
+
+#[tauri::command]
+pub async fn get_leaderboard(
+    api: BackendApiState<'_>,
+) -> Result<Vec<server_types::plant_scan::responses::LeaderboardUser>, String> {
+    let inner: &Arc<ApiClient> = api.inner();
+    inner
+        .plant_scan_client()
+        .get_leaderboard()
+        .await
+        .map_err(|e| e.user_message())
+}

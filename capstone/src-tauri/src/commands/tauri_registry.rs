@@ -17,6 +17,7 @@ pub fn invoke_handler() -> impl Fn(tauri::ipc::Invoke) -> bool + Send + Sync + '
         get_profile,
         get_user_image_locations,
         get_plant_geo_distribution,
-        get_recent_finds
+        get_recent_finds,
+        get_leaderboard
     ]
 }

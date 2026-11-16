@@ -106,6 +106,15 @@ export interface RecentFind {
   last_name: string | null;
 }
 
+export interface LeaderboardUser {
+  id: number;
+  first_name: string;
+  last_name: string;
+  xp: number;
+  level: number;
+  rank_title: string;
+}
+
 export interface ImageGeolocation {
   latitude: number;
   longitude: number;

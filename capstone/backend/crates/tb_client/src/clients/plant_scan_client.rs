@@ -97,4 +97,10 @@ impl<'a> PlantScanClient<'a> {
         parse_json_response(response).await
     }
 
+    pub async fn get_leaderboard(&self) -> ClientResult<Vec<LeaderboardUser>> {
+        let request = self.api.http.get(self.api.base_url.join("/leaderboard")?.to_string());
+        let response = self.api.authenticated_request(request)?.send().await?;
+        parse_json_response(response).await
+    }
+
 }
