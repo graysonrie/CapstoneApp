@@ -1,7 +1,7 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useAuthFormStore } from "@/features/auth/store/useAuthFormStore";
+import { useScanStore } from "@/features/plant_scan/store/useScanStore";
 import {
   completeProfile,
   CompleteProfileParams,
@@ -12,14 +12,19 @@ import {
   signUp,
   SignUpParams,
 } from "@/generated";
+import { QueryClient, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { sessionQueryKey } from "./useIsValidSession";
 
-async function routeAfterAuth(
-  router: ReturnType<typeof useRouter>,
-  queryClient: ReturnType<typeof useQueryClient>,
-) {
+function resetClientSession(queryClient: QueryClient) {
+  queryClient.clear();
+  useScanStore.getState().reset();
+  useAuthFormStore.getState().setValues({ email: "", password: "" });
+}
+
+async function routeAfterAuth(router: ReturnType<typeof useRouter>, queryClient: QueryClient) {
   const session = await getSession();
-  queryClient.setQueryData(sessionQueryKey, session !== null);
+  queryClient.setQueryData(sessionQueryKey, session);
   if (!session) {
     router.push("/login");
     return;
@@ -37,7 +42,10 @@ export function useLoginMutation() {
 
   return useMutation({
     mutationFn: (input: LogInParams) => logIn(input),
-    onSuccess: () => routeAfterAuth(router, queryClient),
+    onSuccess: async () => {
+      resetClientSession(queryClient);
+      await routeAfterAuth(router, queryClient);
+    },
   });
 }
 
@@ -47,7 +55,10 @@ export function useSignupMutation() {
 
   return useMutation({
     mutationFn: (input: SignUpParams) => signUp(input),
-    onSuccess: () => routeAfterAuth(router, queryClient),
+    onSuccess: async () => {
+      resetClientSession(queryClient);
+      await routeAfterAuth(router, queryClient);
+    },
   });
 }
 
@@ -57,8 +68,9 @@ export function useCompleteProfileMutation() {
 
   return useMutation({
     mutationFn: (input: CompleteProfileParams) => completeProfile(input),
-    onSuccess: () => {
-      queryClient.setQueryData(sessionQueryKey, true);
+    onSuccess: async () => {
+      const session = await getSession();
+      queryClient.setQueryData(sessionQueryKey, session);
       router.push("/home");
     },
   });
@@ -71,7 +83,7 @@ export function useLogoutMutation() {
   return useMutation({
     mutationFn: () => logOut(),
     onSuccess: () => {
-      queryClient.setQueryData(sessionQueryKey, false);
+      resetClientSession(queryClient);
       router.replace("/login");
     },
   });

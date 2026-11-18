@@ -14,6 +14,7 @@ interface ScanStore {
   markScanStarted: () => boolean;
   setResult: (result: PlantScanResult, imageSrc: string) => void;
   clearPending: () => void;
+  reset: () => void;
 }
 
 function readStoredScan(): { previousPath: string; pendingImagePath: string | null } {
@@ -74,5 +75,15 @@ export const useScanStore = create<ScanStore>((set, get) => ({
   clearPending: () => {
     clearPersistedScan();
     set({ pendingImagePath: null, scanStarted: false });
+  },
+  reset: () => {
+    clearPersistedScan();
+    set({
+      previousPath: "/home",
+      pendingImagePath: null,
+      imageSrc: null,
+      result: null,
+      scanStarted: false,
+    });
   },
 }));

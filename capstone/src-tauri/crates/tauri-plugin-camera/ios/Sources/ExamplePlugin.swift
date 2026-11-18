@@ -16,6 +16,7 @@ class CameraPlugin: Plugin, CLLocationManagerDelegate, UIImagePickerControllerDe
   private let completedPathKey = "camera_plugin.completed_path"
   private let locationTimeoutSeconds = 7.0
   private let maximumLocationAge: TimeInterval = 120
+  private let goodFixAccuracy: CLLocationAccuracy = 100
 
   // Persisted because the WKWebView content process can be terminated while the camera is
   // open; the page reloads and the JS promise waiting for the result is lost.
@@ -68,6 +69,7 @@ class CameraPlugin: Plugin, CLLocationManagerDelegate, UIImagePickerControllerDe
       let manager = CLLocationManager()
       manager.delegate = self
       manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+      manager.pausesLocationUpdatesAutomatically = false
       self.locationManager = manager
 
       if #available(iOS 14.0, *) {
@@ -90,8 +92,14 @@ class CameraPlugin: Plugin, CLLocationManagerDelegate, UIImagePickerControllerDe
   }
 
   private func requestLocationFix() {
-    guard !locationRequestStarted, !cameraPresentationStarted else { return }
+    guard !locationRequestStarted, !cameraPresentationStarted, let manager = locationManager else {
+      return
+    }
     locationRequestStarted = true
+
+    if let cached = manager.location {
+      recordLocation(cached)
+    }
 
     let timeout = DispatchWorkItem { [weak self] in
       guard let self = self, !self.cameraPresentationStarted else { return }
@@ -102,7 +110,11 @@ class CameraPlugin: Plugin, CLLocationManagerDelegate, UIImagePickerControllerDe
       deadline: .now() + locationTimeoutSeconds,
       execute: timeout
     )
-    locationManager?.requestLocation()
+    manager.startUpdatingLocation()
+
+    if hasGoodFix() {
+      presentCamera()
+    }
   }
 
   func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -119,20 +131,19 @@ class CameraPlugin: Plugin, CLLocationManagerDelegate, UIImagePickerControllerDe
   }
 
   func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-    guard manager === locationManager, !cameraPresentationStarted else { return }
-    let now = Date()
-    capturedLocation = locations
-      .filter {
-        now.timeIntervalSince($0.timestamp) >= 0 &&
-          now.timeIntervalSince($0.timestamp) <= maximumLocationAge &&
-          $0.horizontalAccuracy >= 0
-      }
-      .max { $0.timestamp < $1.timestamp }
+    guard manager === locationManager else { return }
+    for location in locations {
+      recordLocation(location)
+    }
+    guard !cameraPresentationStarted, hasGoodFix() else { return }
     presentCamera()
   }
 
   func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
     guard manager === locationManager, !cameraPresentationStarted else { return }
+    if let clError = error as? CLError, clError.code == .locationUnknown {
+      return
+    }
     NSLog("CameraPlugin: unable to get photo location: %@", error.localizedDescription)
     presentCamera()
   }
@@ -142,11 +153,10 @@ class CameraPlugin: Plugin, CLLocationManagerDelegate, UIImagePickerControllerDe
     cameraPresentationStarted = true
     locationTimeout?.cancel()
     locationTimeout = nil
-    locationManager?.delegate = nil
-    locationManager = nil
 
     DispatchQueue.main.async {
       guard let viewController = self.manager.viewController else {
+        self.stopLocationUpdates()
         self.pendingInvoke = nil
         self.capturedLocation = nil
         invoke.reject("No view controller available to present camera", code: "CAMERA_ERROR")
@@ -166,13 +176,18 @@ class CameraPlugin: Plugin, CLLocationManagerDelegate, UIImagePickerControllerDe
     didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
   ) {
     picker.dismiss(animated: true)
+    if let latest = locationManager?.location {
+      recordLocation(latest)
+    }
+    let location = capturedLocation
+    stopLocationUpdates()
     defer {
       pendingInvoke = nil
       capturedLocation = nil
     }
 
     guard let image = info[.originalImage] as? UIImage,
-      let data = jpegData(for: image, location: capturedLocation)
+      let data = jpegData(for: image, location: location)
     else {
       pendingInvoke?.reject("Unable to save photo", code: "CAMERA_ERROR")
       return
@@ -197,12 +212,10 @@ class CameraPlugin: Plugin, CLLocationManagerDelegate, UIImagePickerControllerDe
       return jpegData
     }
 
-    let gpsMetadata: [String: Any] = [
-      kCGImagePropertyGPSLatitude as String: abs(location.coordinate.latitude),
-      kCGImagePropertyGPSLatitudeRef as String: location.coordinate.latitude < 0 ? "S" : "N",
-      kCGImagePropertyGPSLongitude as String: abs(location.coordinate.longitude),
-      kCGImagePropertyGPSLongitudeRef as String: location.coordinate.longitude < 0 ? "W" : "E",
-    ]
+    var properties =
+      CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any] ?? [:]
+    properties[kCGImagePropertyGPSDictionary as String] = gpsMetadata(for: location)
+
     let output = NSMutableData()
     guard let destination = CGImageDestinationCreateWithData(output, kUTTypeJPEG, 1, nil) else {
       NSLog("CameraPlugin: unable to create JPEG destination for GPS metadata")
@@ -213,7 +226,7 @@ class CameraPlugin: Plugin, CLLocationManagerDelegate, UIImagePickerControllerDe
       destination,
       source,
       0,
-      [kCGImagePropertyGPSDictionary as String: gpsMetadata] as CFDictionary
+      properties as CFDictionary
     )
     guard CGImageDestinationFinalize(destination) else {
       NSLog("CameraPlugin: unable to write GPS metadata to captured JPEG")
@@ -222,11 +235,72 @@ class CameraPlugin: Plugin, CLLocationManagerDelegate, UIImagePickerControllerDe
     return output as Data
   }
 
+  private func gpsMetadata(for location: CLLocation) -> [String: Any] {
+    let latitude = location.coordinate.latitude
+    let longitude = location.coordinate.longitude
+    let timeFormatter = DateFormatter()
+    timeFormatter.locale = Locale(identifier: "en_US_POSIX")
+    timeFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+    timeFormatter.dateFormat = "HH:mm:ss"
+    let dateFormatter = DateFormatter()
+    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+    dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+    dateFormatter.dateFormat = "yyyy:MM:dd"
+
+    var gps: [String: Any] = [
+      kCGImagePropertyGPSLatitude as String: abs(latitude),
+      kCGImagePropertyGPSLatitudeRef as String: latitude < 0 ? "S" : "N",
+      kCGImagePropertyGPSLongitude as String: abs(longitude),
+      kCGImagePropertyGPSLongitudeRef as String: longitude < 0 ? "W" : "E",
+      kCGImagePropertyGPSVersion as String: "2.2.0.0",
+      kCGImagePropertyGPSTimeStamp as String: timeFormatter.string(from: location.timestamp),
+      kCGImagePropertyGPSDateStamp as String: dateFormatter.string(from: location.timestamp),
+    ]
+    if location.verticalAccuracy >= 0 {
+      gps[kCGImagePropertyGPSAltitude as String] = abs(location.altitude)
+      gps[kCGImagePropertyGPSAltitudeRef as String] = location.altitude < 0 ? 1 : 0
+    }
+    if location.horizontalAccuracy >= 0 {
+      gps[kCGImagePropertyGPSHPositioningError as String] = location.horizontalAccuracy
+    }
+    return gps
+  }
+
   func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
     picker.dismiss(animated: true)
+    stopLocationUpdates()
     pendingInvoke?.reject("Photo capture was cancelled", code: "CANCELLED")
     pendingInvoke = nil
     capturedLocation = nil
+  }
+
+  private func recordLocation(_ location: CLLocation) {
+    let age = Date().timeIntervalSince(location.timestamp)
+    guard age >= 0, age <= maximumLocationAge, location.horizontalAccuracy >= 0 else { return }
+    guard let current = capturedLocation else {
+      capturedLocation = location
+      return
+    }
+    let moreAccurate = location.horizontalAccuracy < current.horizontalAccuracy
+    let newerAtSameAccuracy =
+      location.horizontalAccuracy == current.horizontalAccuracy
+      && location.timestamp > current.timestamp
+    if moreAccurate || newerAtSameAccuracy {
+      capturedLocation = location
+    }
+  }
+
+  private func hasGoodFix() -> Bool {
+    guard let capturedLocation else { return false }
+    return capturedLocation.horizontalAccuracy <= goodFixAccuracy
+  }
+
+  private func stopLocationUpdates() {
+    locationTimeout?.cancel()
+    locationTimeout = nil
+    locationManager?.stopUpdatingLocation()
+    locationManager?.delegate = nil
+    locationManager = nil
   }
 }
 

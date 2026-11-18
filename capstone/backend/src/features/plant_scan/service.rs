@@ -338,7 +338,7 @@ pub async fn get_user_plant_image_locations(
 
         let image_bytes = storage.read_file_bytes(image_path).await?;
         let location = read_image_geolocation(&image_bytes);
-        
+
         let thumbnail_data_url = location
             .as_ref()
             .and_then(|_| image_thumbnail_data_url(&image_bytes));
@@ -374,7 +374,7 @@ pub async fn get_plant_geo_distributition(
         .text()
         .await
         .map_err(|error| PlantScanError::OpenAi(error.to_string()))?;
-    
+
     serde_json::from_str(&body).map_err(|error| PlantScanError::OpenAi(error.to_string()))
 }
 
@@ -420,7 +420,6 @@ pub async fn get_recent_finds(
             first_name,
             last_name,
         });
-
     }
     Ok(recent_finds)
 }
@@ -430,14 +429,17 @@ pub async fn get_leaderboard(
 ) -> Result<Vec<LeaderboardUser>, PlantScanError> {
     let users = repo::get_users_by_xp(db).await?;
 
-    let users = users.into_iter().map(|user| LeaderboardUser {
-        id: user.id,
-        first_name: user.first_name.unwrap_or_default(),
-        last_name: user.last_name.unwrap_or_default(),
-        xp: user.xp,
-        level: user.level,
-        rank_title: user.rank_title,
-    }).collect::<Vec<_>>();
+    let users = users
+        .into_iter()
+        .map(|user| LeaderboardUser {
+            id: user.id,
+            first_name: user.first_name.unwrap_or_default(),
+            last_name: user.last_name.unwrap_or_default(),
+            xp: user.xp,
+            level: user.level,
+            rank_title: user.rank_title,
+        })
+        .collect::<Vec<_>>();
     Ok(users)
 }
 
@@ -498,24 +500,13 @@ fn read_exif_coordinate(
     maximum_degrees: f64,
 ) -> Option<f64> {
     let coordinate_field = exif.get_field(coordinate_tag, In::PRIMARY)?;
-    let Value::Rational(parts) = &coordinate_field.value else {
-        return None;
-    };
-    let [degrees, minutes, seconds] = parts.as_slice() else {
-        return None;
-    };
-    if [degrees, minutes, seconds]
-        .iter()
-        .any(|part| part.denom == 0)
-    {
-        return None;
-    }
+    let absolute_degrees = absolute_degrees_from_exif(&coordinate_field.value)?;
 
     let reference_field = exif.get_field(reference_tag, In::PRIMARY)?;
     let Value::Ascii(references) = &reference_field.value else {
         return None;
     };
-    let reference = references.first()?.as_slice();
+    let reference = trim_exif_ascii(references.first()?);
     let sign = if reference == positive_reference {
         1.0
     } else if reference == negative_reference {
@@ -524,18 +515,48 @@ fn read_exif_coordinate(
         return None;
     };
 
-    let degrees = degrees.to_f64();
-    let minutes = minutes.to_f64();
-    let seconds = seconds.to_f64();
-    if minutes >= 60.0 || seconds >= 60.0 {
-        return None;
-    }
-    let absolute_degrees = degrees + minutes / 60.0 + seconds / 3600.0;
-    if !absolute_degrees.is_finite() || absolute_degrees > maximum_degrees {
+    if !absolute_degrees.is_finite() || absolute_degrees < 0.0 || absolute_degrees > maximum_degrees
+    {
         return None;
     }
 
     Some(sign * absolute_degrees)
+}
+
+fn absolute_degrees_from_exif(value: &Value) -> Option<f64> {
+    match value {
+        Value::Rational(parts) => match parts.as_slice() {
+            [degrees, minutes, seconds] => {
+                if [degrees, minutes, seconds]
+                    .iter()
+                    .any(|part| part.denom == 0)
+                {
+                    return None;
+                }
+                let minutes = minutes.to_f64();
+                let seconds = seconds.to_f64();
+                if minutes >= 60.0 || seconds >= 60.0 {
+                    return None;
+                }
+                Some(degrees.to_f64() + minutes / 60.0 + seconds / 3600.0)
+            }
+            [degrees] if degrees.denom != 0 => Some(degrees.to_f64()),
+            _ => None,
+        },
+        Value::Float(parts) => match parts.as_slice() {
+            [degrees] => Some(f64::from(*degrees)),
+            _ => None,
+        },
+        Value::Double(parts) => match parts.as_slice() {
+            [degrees] => Some(*degrees),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+fn trim_exif_ascii(value: &[u8]) -> &[u8] {
+    value.strip_suffix(&[0]).unwrap_or(value)
 }
 
 fn format_found_on(date: chrono::NaiveDate) -> String {
@@ -564,4 +585,25 @@ fn compute_streak(
         }
     }
     streak
+}
+
+#[cfg(test)]
+mod tests {
+    use super::read_image_geolocation;
+
+    #[test]
+    fn reads_imageio_gps_dictionary() {
+        let location = read_image_geolocation(include_bytes!("fixtures/ios_gps.jpg"))
+            .expect("ImageIO GPS dictionary should be readable");
+        assert!(
+            (location.latitude - 41.8781).abs() < 0.0001,
+            "latitude {}",
+            location.latitude
+        );
+        assert!(
+            (location.longitude - -87.6298).abs() < 0.0001,
+            "longitude {}",
+            location.longitude
+        );
+    }
 }
