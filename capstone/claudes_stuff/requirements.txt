@@ -1,0 +1,5 @@
+python-docx>=1.1
+tree-sitter>=0.24
+tree-sitter-rust>=0.23
+tree-sitter-typescript>=0.23
+matplotlib>=3.9
